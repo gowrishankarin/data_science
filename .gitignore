@@ -2,3 +2,6 @@
 *.zip
 *.xlsx
 *.xml
+*.RData
+*.Rhistory
+.httr-oauth
