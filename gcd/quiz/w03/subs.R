@@ -10,8 +10,13 @@ gdp <- function() {
     
     gdp <- rename(gdp, replace=c("X" = "CC", "X.1"="Rank", "X.3"="Name", "X.4"="GDP"))
     
-    # Merged Data
-    mD <- merge(gdp, edu, by.x="CC", by.y="CountryCode", all=F)
+    gdpC <- gdp[1:190,]
     
-    mD
+    # Merged Data
+    mD <- merge(gdpC, edu, by.x="CC", by.y="CountryCode", all=F)
+    
+    mD <- mD[,c("CC", "Rank", "GDP", "Short.Name")]
+    xn <- as.numeric(gsub(",", "", mD$GDP))
+    mD$GDPn <- xn
+    mD[order(mD$GDPn, decreasing=F),]
 }
