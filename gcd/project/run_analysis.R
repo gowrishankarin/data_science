@@ -1,23 +1,53 @@
 read_dataset <- function(directory = "./UCI HAR Dataset") {
 
+    
+    # Read X Training and Test data set
 	x_train <- read.table(paste(directory,"train/X_train.txt", sep="/"))
-	print(dim(x_train))
-
+	x_test <- read.table(paste(directory,"test/X_test.txt", sep="/"))
+    
+    # Append them by rows.
+    x <- rbind(x_train, x_test)
+    
+	
+	# Read Y training and test data set
 	y_train <- read.table(paste(directory, "train/Y_train.txt", sep="/"))
-	print(dim(y_train))
+	y_test <- read.table(paste(directory,"test/y_test.txt", sep="/"))
+    
+    # Append them by rows
+	y <- rbind(y_train, y_test)
 	
 	subject_train <- read.table(paste(directory, "train/subject_train.txt", sep="/"))
-	print(dim(subject_train))
+	subject_test <- read.table(paste(directory, "test/subject_test.txt", sep="/"))
+	
+    # Append them by rows
+	subject <- rbind(subject_train, subject_test)
+	
 	
     rel_path_signals <- paste(directory, "train", "Inertial Signals", sep="/")
-    signal_files <- list.files(rel_path_signals)
-    
+	rel_path_signals_t <- paste(directory, "test", "Inertial Signals", sep="/")
+	signal_files <- list.files(rel_path_signals)
+	signal_files_t <- list.files(rel_path_signals)
+	
+    data <- list()
     for ( i in 1:length(signal_files)) {
         file_name = paste(rel_path_signals, signal_files[i], sep="/")
-        train_data <- read.table(file_name)
-        print(dim(train_data))
+        file_name_t = paste(rel_path_signals, signal_files_t[i], sep="/")
+        
+        
+        field <- strsplit(file_name, "[.]")
+        train <- read.table(file_name)
+        test <- read.table(file_name_t)
+        
+        #print(paste(file_name, file_name_t, dim(train), dim(test), ":"))
+        dataM <- rbind(train, test)
+        
+        print(dim(dataM))
+        print(class(dataM))
+        
     }
     
+	
+    #data
     
 	
 }
