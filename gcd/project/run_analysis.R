@@ -21,6 +21,8 @@ read_dataset <- function(directory = "./UCI HAR Dataset") {
 	
     # Append them by rows
 	subject <- rbind(subject_train, subject_test)
+    
+    main_data = cbind(x, y, subject)
 	
 	
     rel_path_signals <- paste(directory, "train", "Inertial Signals", sep="/")
@@ -28,7 +30,7 @@ read_dataset <- function(directory = "./UCI HAR Dataset") {
 	signal_files <- list.files(rel_path_signals)
 	signal_files_t <- list.files(rel_path_signals)
 	
-    data <- list()
+    data <- array(dim=9)
     for ( i in 1:length(signal_files)) {
         file_name = paste(rel_path_signals, signal_files[i], sep="/")
         file_name_t = paste(rel_path_signals, signal_files_t[i], sep="/")
@@ -39,15 +41,12 @@ read_dataset <- function(directory = "./UCI HAR Dataset") {
         test <- read.table(file_name_t)
         
         #print(paste(file_name, file_name_t, dim(train), dim(test), ":"))
-        dataM <- rbind(train, test)
-        
-        print(dim(dataM))
-        print(class(dataM))
+        data[i] <- rbind(train, test)
         
     }
     
 	
-    #data
+    data
     
 	
 }

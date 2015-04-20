@@ -15,7 +15,7 @@ gdp <- function() {
     # Merged Data
     mD <- merge(gdpC, edu, by.x="CC", by.y="CountryCode", all=F)
     
-    mD <- mD[,c("CC", "Rank", "GDP", "Short.Name", "Income.Group")]
+    mD <- mD[,c("CC", "Rank", "GDP", "Short.Name", "Income.Group", "Special.Notes")]
     xn <- as.numeric(gsub(",", "", mD$GDP))
     mD$GDPn <- xn
     mD[order(mD$GDPn, decreasing=F),]
