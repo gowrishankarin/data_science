@@ -50,6 +50,12 @@ extract <- function(merged_data, directory="./UCI HAR Dataset") {
     
 }
 
+tidy_dataset <- function(extracted_data) {
+    
+ 
+    
+}
+
 read_dataset <- function(x, directory = "./UCI HAR Dataset") {
     library(data.table)
     library(plyr)
