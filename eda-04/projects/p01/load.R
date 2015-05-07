@@ -6,7 +6,7 @@ makeHPCData <- function() {
     data <- NULL
     setData <- function(new_data) data <<- new_data
     getData <- function() data
-    list(set = set, setData = setData, getData = getData)
+    list(setData = setData, getData = getData)
     
 }
 
@@ -31,17 +31,24 @@ load <- function(file = "household_power_consumption.txt") {
     # Load required libraries
     library(data.table)
     library(dplyr)
+    library(lubridate)
     
     # Chain it, Cache It
     # Read data file and account not available entries as "?" with column 
     # separator ';'
     data <- read.table(file, header=T, sep=';', na.strings="?", 
         stringsAsFactors = FALSE)
+    # Convert the data to table data and remove from the memory
     new_data <- tbl_df(data)
     rm(data)
     
-    new_data <- mutate(new_data, Date = as.Date(Date, format="%d/%m/%Y"))
-
+    time_in_posix_lt <- as.POSIXlt(new_data$Time, format="%H:%M:%S")
+    
+    # Mutate so that the format of Date and Time(POSIXct) column is no longer a string
+    new_data <- mutate(new_data, Date = as.Date(Date, format="%d/%m/%Y"), 
+        Time = fast_strptime(Time, format="%H:%M:%S"))
+    
+    # Acquire meter data for specific dates
     new_data <- filter(new_data, Date == as.Date("2007-02-01") | 
         Date == as.Date("2007-02-02"))    
     
