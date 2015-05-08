@@ -1,8 +1,10 @@
 
-plot_3 <- function(data) {
-    with(data, plot(Time, Sub_metering_1, type="l", ylab = "Energy sub metering"))
-    with(data, lines(Sub_metering_2, type="l", col="red"))
-    with(data, lines(Sub_metering_3, type="l", col="blue"))
+data <- cacheHPCData(pFunc)
+
+with(data, plot(DateTime, Sub_metering_1, type="l", ylab = "Energy sub metering"))
+
     
-    legend("topright")
-}
+with(data, lines(DateTime, Sub_metering_2, type="l", col="red"))
+with(data, lines(DateTime, Sub_metering_3, type="l", col="blue"))
+
+legend("topright")

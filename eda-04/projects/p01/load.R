@@ -41,16 +41,21 @@ load <- function(file = "household_power_consumption.txt") {
     # Convert the data to table data and remove from the memory
     new_data <- tbl_df(data)
     rm(data)
-    
-    time_in_posix_lt <- as.POSIXlt(new_data$Time, format="%H:%M:%S")
+
+    new_data <- mutate(new_data, DateTime = paste(Date, Time, sep = " "))
     
     # Mutate so that the format of Date and Time(POSIXct) column is no longer a string
     new_data <- mutate(new_data, Date = as.Date(Date, format="%d/%m/%Y"), 
-        Time = fast_strptime(Time, format="%H:%M:%S"))
+        DateTime = fast_strptime(DateTime, format="%d/%m/%Y %H:%M:%S"))
     
     # Acquire meter data for specific dates
     new_data <- filter(new_data, Date == as.Date("2007-02-01") | 
         Date == as.Date("2007-02-02"))    
     
+
     return(new_data)
 }
+
+# cacheHPCData and function pointer to access data list object are in global space.
+pFunc <- makeHPCData()
+cacheHPCData(pFunc)
