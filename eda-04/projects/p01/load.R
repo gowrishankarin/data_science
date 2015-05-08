@@ -1,3 +1,5 @@
+# This file is crafted focusing optimization of reading data and
+# reshaping/tidying to most constructive ones
 
 # INPUT <- NONE
 # OUTPUT <- A List Object holding functions to operate on the household power 
