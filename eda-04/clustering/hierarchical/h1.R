@@ -25,3 +25,14 @@ png(filename = "./pics/h1-dendrogram.png", width = 480, height = 480, units = "p
 plot(hClustering)
 dev.off()
 
+source("myplclust.R")
+myplclust(hClustering, lab = rep(1:3, each = 4), lab.col = rep(1:3, each = 4))
+
+png(filename = "./pics/h1-dendrogram-cool.png", width = 480, height = 480, units = "px")
+myplclust(hClustering, lab = rep(1:3, each = 4), lab.col = rep(1:3, each = 4))
+dev.off()
+
+
+
+
+
