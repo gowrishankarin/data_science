@@ -20,6 +20,8 @@ dist(dataFrame)
 
 hClustering <- hclust(distxy)
 
+## DENDROGRAM
+
 plot(hClustering)
 png(filename = "./pics/h1-dendrogram.png", width = 480, height = 480, units = "px")
 plot(hClustering)
@@ -28,11 +30,20 @@ dev.off()
 source("myplclust.R")
 myplclust(hClustering, lab = rep(1:3, each = 4), lab.col = rep(1:3, each = 4))
 
+## PRETTY DENDROGRAM
+
 png(filename = "./pics/h1-dendrogram-cool.png", width = 480, height = 480, units = "px")
 myplclust(hClustering, lab = rep(1:3, each = 4), lab.col = rep(1:3, each = 4))
 dev.off()
 
 
+## HEATMAP
 
+set.seed(143)
+dataMatrix <- as.matrix(dataFrame)[sample(1:12), ]
+heatmap(dataMatrix)
 
+png(filename = "./pics/h1-heatmap.png", width = 480, height = 480, units = "px")
+heatmap(dataMatrix)
+dev.off()
 
