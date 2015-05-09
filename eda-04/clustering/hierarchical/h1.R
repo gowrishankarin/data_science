@@ -3,6 +3,7 @@ plot1 <- function() {
     text(x + 0.05, y + 0.05, labels = as.character(1:12))
 }
 
+### DATA CREATION
 
 set.seed(1234)
 par(mar = c(0, 0, 0, 0))
@@ -46,4 +47,7 @@ heatmap(dataMatrix)
 png(filename = "./pics/h1-heatmap.png", width = 480, height = 480, units = "px")
 heatmap(dataMatrix)
 dev.off()
+
+
+
 
