@@ -24,7 +24,7 @@ makeFPMData <- function() {
     
 }
 
-# INPUT <- A function pointer to makeHPCDate method.
+# INPUT <- A function pointer to makeFPMDate method.
 # OUTPUT <- Tidied data of table data frame(tbl_df) for further processing.
 cacheFPMData <- function(x, dataType,  ...) {
     SCC <- x$getSCCData()
@@ -52,7 +52,7 @@ cacheFPMData <- function(x, dataType,  ...) {
 
 }
 
-# INPUT <- File location of HPC data
+# INPUT <- File location of FPM data
 # OUTPUT <- Filtered/Tidied data of table data frame(tbl_df) for further 
 # processing.
 load <- function(filename) {
@@ -62,8 +62,6 @@ load <- function(filename) {
     library(lubridate)
     
     # Chain it, Cache It
-    # Read data file and account not available entries as "?" with column 
-    # separator ';'
     data <- readRDS(filename)
     # Convert the data to table data and remove from the memory
     new_data <- tbl_df(data)
@@ -72,5 +70,8 @@ load <- function(filename) {
     return(new_data)
 }
 
-# cacheHPCData and function pointer to access data list object are in global space.
+# cacheFPMData and function pointer to access data list object are in global space.
+pFunc <- makeFPMData()
+SCC <- cacheFPMData(pFunc, "SCC")
+NEI <- cacheFPMData(pFunc, "NEI")
 
