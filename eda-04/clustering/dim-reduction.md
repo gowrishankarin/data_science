@@ -56,3 +56,7 @@ This document explains Dimension Reduction includes Principle Component Analysis
 #### D and Variance Explained
 
 ![Unknown](dim-reduction/pics/pca_12_d_and_variance.png) 
+
+#### Impute with K-Nearest Neighborhood Method
+
+![Unknown](dim-reduction/pics/pca_13_impute.png) 

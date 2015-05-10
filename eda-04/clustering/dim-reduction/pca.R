@@ -195,3 +195,27 @@ my_png(filename = "./pics/pca_12_d_and_variance.png")
 d_and_variance_plot()
 dev.off()
 
+## IMPUTING
+impute <- function() {
+    
+    par(mfrow=c(1, 2))
+    plot(svd1$v[, 1], pch = 19);
+    plot(svd2$v[,1], pch=19)
+}
+
+library(impute)
+dataMatrix2 <- dataMatrixOrdered
+dataMatrix2[sample(1:100, size = 40, replace = F)] <- NA
+dataMatrix2 <- impute.knn(dataMatrix2)$data
+svd1 <- svd(scale(dataMatrixOrdered))
+svd2 <- svd(scale(dataMatrix2))
+
+impute()
+
+my_png(filename = "./pics/pca_13_impute.png")
+impute()
+dev.off()
+
+
+
+
