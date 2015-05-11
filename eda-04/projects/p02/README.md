@@ -42,35 +42,35 @@ Upload a PNG file containing your plot addressing this question.
 ![Unknown](pics/plot1.png) 
 
 
-#### PM2.5 Emission trend from 1999-2008
+#### Baltimore City Emission Trend
 
 Have total emissions from PM2.5 decreased in the Baltimore City, Maryland (fips == "24510") from 1999 to 2008? Use the base plotting system to make a plot answering this question.
 
 ![Unknown](pics/plot2.png) 
 
 
-#### PM2.5 Emission trend from 1999-2008
+#### Baltimore Emission Trend for 4 Sources(point, nonpoint, onroad, nonroad)
 
 Of the four types of sources indicated by the type (point, nonpoint, onroad, nonroad) variable, which of these four sources have seen decreases in emissions from 1999–2008 for Baltimore City? Which have seen increases in emissions from 1999–2008? Use the ggplot2 plotting system to make a plot answer this question.
 
 ![Unknown](pics/plot3.png) 
 
 
-#### PM2.5 Emission trend from 1999-2008
+#### US Emission Trend(Coal Combustion Related Sources)
 
 Across the United States, how have emissions from coal combustion-related sources changed from 1999–2008?
 
 ![Unknown](pics/plot4.png) 
 
 
-#### PM2.5 Emission trend from 1999-2008
+#### Motor Vehicle Emission Baltimore City Emission Trend
 
 How have emissions from motor vehicle sources changed from 1999–2008 in Baltimore City?
 
 ![Unknown](pics/plot5.png) 
 
 
-#### PM2.5 Emission trend from 1999-2008
+#### Motor Vehicle Emission Baltimore City vs Los Angeles City
 
 Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time in motor vehicle emissions?
 
