@@ -20,7 +20,7 @@ data <- cacheHPCData(pFunc)
 
 # Draw once on the current device for visual feedback then plot in the png device
 plot4()
-png(file="plot4.png", width=480, height=480, units="px")
+png(file="plot4.png", width=960, height=960, units="px")
 plot4()
 dev.off()
 #reset the grid to 1x1

@@ -51,8 +51,8 @@ load <- function(file = "household_power_consumption.txt") {
         DateTime = fast_strptime(DateTime, format="%d/%m/%Y %H:%M:%S"))
     
     # Acquire meter data for specific dates
-    new_data <- filter(new_data, Date == as.Date("2007-02-01") | 
-        Date == as.Date("2007-02-02"))    
+    new_data <- filter(new_data, Date >= as.Date("2007-01-01") & 
+        Date <= as.Date("2007-12-30"))    
     
 
     return(new_data)
