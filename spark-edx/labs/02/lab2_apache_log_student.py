@@ -391,23 +391,23 @@ Test.assertEquals(uniqueHostCount, 54507, 'incorrect uniqueHostCount')
 # ####Think about the steps that you need to perform to count the number of different hosts that make requests *each* day.
 # ####*Since the log only covers a single month, you can ignore the month.*
 
-# In[ ]:
+# In[43]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
-dayToHostPairTuple = access_logs.<FILL IN>
+dayToHostPairTuple = access_logs.map(lambda log: (log.date_time.day, log.host))
 
-dayGroupedHosts = dayToHostPairTuple.<FILL IN>
+dayGroupedHosts = dayToHostPairTuple.groupByKey().mapValues(lambda x: list(set(x)))
 
-dayHostCount = dayGroupedHosts.<FILL IN>
+dayHostCount = dayGroupedHosts.map(lambda (day, hosts): (day, len(hosts)))
 
 dailyHosts = (dayHostCount
-              <FILL IN>)
+              .sortByKey().cache())
 dailyHostsList = dailyHosts.take(30)
 print 'Unique hosts per day: %s' % dailyHostsList
 
 
-# In[ ]:
+# In[44]:
 
 # TEST Number of unique daily hosts (3c)
 Test.assertEquals(dailyHosts.count(), 21, 'incorrect dailyHosts.count()')
@@ -420,15 +420,14 @@ Test.assertTrue(dailyHosts.is_cached, 'incorrect dailyHosts.is_cached')
 # #### `daysWithHosts` should be a list of days and `hosts` should be a list of number of unique hosts for each corresponding day.
 # #### * How could you convert a RDD into a list? See the [`collect()` method](http://spark.apache.org/docs/latest/api/python/pyspark.html?highlight=collect#pyspark.RDD.collect)*
 
-# In[ ]:
+# In[48]:
 
 # TODO: Replace <FILL IN> with appropriate code
+daysWithHosts = dailyHosts.map(lambda (x, y): x).collect()
+hosts = dailyHosts.map(lambda (x, y): y).collect()
 
-daysWithHosts = dailyHosts.<FILL IN>
-hosts = dailyHosts.<FILL IN>
 
-
-# In[ ]:
+# In[49]:
 
 # TEST Visualizing unique daily hosts (3d)
 test_days = range(1, 23)
@@ -437,7 +436,7 @@ Test.assertEquals(daysWithHosts, test_days, 'incorrect days')
 Test.assertEquals(hosts, [2582, 3222, 4190, 2502, 2537, 4106, 4406, 4317, 4523, 4346, 2864, 2650, 4454, 4214, 4340, 4385, 4168, 2550, 2560, 4134, 4456], 'incorrect hosts')
 
 
-# In[ ]:
+# In[50]:
 
 fig = plt.figure(figsize=(8,4.5), facecolor='white', edgecolor='white')
 plt.axis([min(daysWithHosts), max(daysWithHosts), 0, max(hosts)+500])
@@ -448,29 +447,29 @@ plt.plot(daysWithHosts, hosts)
 pass
 
 
-# #### **(3e) Exercise: Average Number of Daily Requests per Hosts**
+# ###### **(3e) Exercise: Average Number of Daily Requests per Hosts**
 # ####Next, let's determine the average number of requests on a day-by-day basis. We'd like a list by increasing day of the month and the associated average number of requests per host for that day. Make sure you cache the resulting RDD `avgDailyReqPerHost` so that we can reuse it in the next exercise.
 # ####To compute the average number of requests per host, get the total number of request across all hosts and divide that by the number of unique hosts.
 # ####*Since the log only covers a single month, you can skip checking for the month.*
 # ####*Also to keep it simple, when calculating the approximate average use the integer value - you do not need to upcast to float*
 
-# In[ ]:
+# In[51]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
-dayAndHostTuple = access_logs.<FILL IN>
+dayAndHostTuple = access_logs.map(lambda log: (log.date_time.day, log.host))
 
-groupedByDay = dayAndHostTuple.<FILL IN>
+groupedByDay = dayAndHostTuple.groupByKey().mapValues(lambda x: list(x))
 
-sortedByDay = groupedByDay.<FILL IN>
+sortedByDay = groupedByDay.sortByKey()
 
 avgDailyReqPerHost = (sortedByDay
-                      <FILL IN>)
+                      .map(lambda (x, y): (x, len(y)/len(set(y)))).cache())
 avgDailyReqPerHostList = avgDailyReqPerHost.take(30)
 print 'Average number of daily requests per Hosts is %s' % avgDailyReqPerHostList
 
 
-# In[ ]:
+# In[52]:
 
 # TEST Average number of daily requests per hosts (3e)
 Test.assertEquals(avgDailyReqPerHostList, [(1, 13), (3, 12), (4, 14), (5, 12), (6, 12), (7, 13), (8, 13), (9, 14), (10, 13), (11, 14), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 12), (20, 12), (21, 13), (22, 12)], 'incorrect avgDailyReqPerHostList')
@@ -481,22 +480,22 @@ Test.assertTrue(avgDailyReqPerHost.is_cached, 'incorrect avgDailyReqPerHost.is_c
 # ####Using the result `avgDailyReqPerHost` from the previous exercise, use `matplotlib` to plot a "Line" graph of the average daily requests per unique host by day.
 # #### `daysWithAvg` should be a list of days and `avgs` should be a list of average daily requests per unique hosts for each corresponding day.
 
-# In[ ]:
+# In[53]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
-daysWithAvg = avgDailyReqPerHost.<FILL IN>
-avgs = avgDailyReqPerHost.<FILL IN>
+daysWithAvg = avgDailyReqPerHost.map(lambda (x, y): x).collect()
+avgs = avgDailyReqPerHost.map(lambda (x, y): y).collect()
 
 
-# In[ ]:
+# In[54]:
 
 # TEST Average Daily Requests per Unique Host (3f)
 Test.assertEquals(daysWithAvg, [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], 'incorrect days')
 Test.assertEquals(avgs, [13, 12, 14, 12, 12, 13, 13, 14, 13, 14, 13, 13, 13, 13, 13, 13, 13, 12, 12, 13, 12], 'incorrect avgs')
 
 
-# In[ ]:
+# In[55]:
 
 fig = plt.figure(figsize=(8,4.2), facecolor='white', edgecolor='white')
 plt.axis([0, max(daysWithAvg), 0, max(avgs)+2])
@@ -516,16 +515,16 @@ pass
 #  
 # #### How many 404 records are in the log?
 
-# In[ ]:
+# In[56]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
 badRecords = (access_logs
-              <FILL IN>)
+              .filter(lambda log: log.response_code == 404).cache())
 print 'Found %d 404 URLs' % badRecords.count()
 
 
-# In[ ]:
+# In[57]:
 
 # TEST Counting 404 (4a)
 Test.assertEquals(badRecords.count(), 6185, 'incorrect badRecords.count()')
@@ -535,19 +534,25 @@ Test.assertTrue(badRecords.is_cached, 'incorrect badRecords.is_cached')
 # #### **(4b) Exercise: Listing 404 Response Code Records**
 # ####Using the RDD containing only log records with a 404 response code that you cached in part (4a), print out a list up to 40 **distinct** endpoints that generate 404 errors -  *no endpoint should appear more than once in your list.*
 
-# In[ ]:
+# In[84]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
-badEndpoints = badRecords.<FILL IN>
+badEndpoints = badRecords.map(lambda log: (log.endpoint, 1))
 
-badUniqueEndpoints = badEndpoints.<FILL IN>
+badUniqueEndpoints = badEndpoints.groupByKey().mapValues(lambda x: list(set(x)))
+
+#print badUniqueEndpoints.take(10)
+
+badUniqueEndpoints = badUniqueEndpoints.map(lambda (x, y): x)
+
+ 
 
 badUniqueEndpointsPick40 = badUniqueEndpoints.take(40)
 print '404 URLS: %s' % badUniqueEndpointsPick40
 
 
-# In[ ]:
+# In[85]:
 
 # TEST Listing 404 records (4b)
 
@@ -559,19 +564,21 @@ Test.assertEquals(len(badUniqueEndpointsSet40), 40, 'badUniqueEndpointsPick40 no
 # ####Using the RDD containing only log records with a 404 response code that you cached in part (4a), print out a list of the top twenty endpoints that generate the most 404 errors.
 # ####*Remember, top endpoints should be in sorted order*
 
-# In[ ]:
+# In[86]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
-badEndpointsCountPairTuple = badRecords.<FILL IN>
+badEndpointsCountPairTuple = badRecords.map(lambda log: (log.endpoint, 1))
 
-badEndpointsSum = badEndpointsCountPairTuple.<FILL IN>
+badEndpointsSum = badEndpointsCountPairTuple.reduceByKey(lambda a, b: a + b)
 
-badEndpointsTop20 = badEndpointsSum.<FILL IN>
+
+
+badEndpointsTop20 = badEndpointsSum.takeOrdered(20, lambda s: -1 * s[1])
 print 'Top Twenty 404 URLs: %s' % badEndpointsTop20
 
 
-# In[ ]:
+# In[87]:
 
 # TEST Top twenty 404 URLs (4c)
 Test.assertEquals(badEndpointsTop20, [(u'/pub/winvn/readme.txt', 633), (u'/pub/winvn/release.txt', 494), (u'/shuttle/missions/STS-69/mission-STS-69.html', 431), (u'/images/nasa-logo.gif', 319), (u'/elv/DELTA/uncons.htm', 178), (u'/shuttle/missions/sts-68/ksc-upclose.gif', 156), (u'/history/apollo/sa-1/sa-1-patch-small.gif', 146), (u'/images/crawlerway-logo.gif', 120), (u'/://spacelink.msfc.nasa.gov', 117), (u'/history/apollo/pad-abort-test-1/pad-abort-test-1-patch-small.gif', 100), (u'/history/apollo/a-001/a-001-patch-small.gif', 97), (u'/images/Nasa-logo.gif', 85), (u'/shuttle/resources/orbiters/atlantis.gif', 64), (u'/history/apollo/images/little-joe.jpg', 62), (u'/images/lf-logo.gif', 59), (u'/shuttle/resources/orbiters/discovery.gif', 56), (u'/shuttle/resources/orbiters/challenger.gif', 54), (u'/robots.txt', 53), (u'/elv/new01.gif>', 43), (u'/history/apollo/pad-abort-test-2/pad-abort-test-2-patch-small.gif', 38)], 'incorrect badEndpointsTop20')
@@ -580,19 +587,19 @@ Test.assertEquals(badEndpointsTop20, [(u'/pub/winvn/readme.txt', 633), (u'/pub/w
 # #### **(4d) Exercise: Listing the Top Twenty-five 404 Response Code Hosts**
 # ####Instead of looking at the endpoints that generated 404 errors, let's look at the hosts that encountered 404 errors. Using the RDD containing only log records with a 404 response code that you cached in part (4a), print out a list of the top twenty-five hosts that generate the most 404 errors.
 
-# In[ ]:
+# In[88]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
-errHostsCountPairTuple = badRecords.<FILL IN>
+errHostsCountPairTuple = badRecords.map(lambda log: (log.host, 1))
 
-errHostsSum = errHostsCountPairTuple.<FILL IN>
+errHostsSum = errHostsCountPairTuple.reduceByKey(lambda a, b: a + b)
 
-errHostsTop25 = errHostsSum.<FILL IN>
+errHostsTop25 = errHostsSum.takeOrdered(25, lambda s: -1 * s[1])
 print 'Top 25 hosts that generated errors: %s' % errHostsTop25
 
 
-# In[ ]:
+# In[89]:
 
 # TEST Top twenty-five 404 response code hosts (4d)
 
@@ -604,22 +611,21 @@ Test.assertEquals(len(set(errHostsTop25) - set([(u'maz3.maz.net', 39), (u'piweba
 # ####Let's explore the 404 records temporally. Break down the 404 requests by day (`cache()` the RDD `errDateSorted`) and get the daily counts sorted by day as a list.
 # ####*Since the log only covers a single month, you can ignore the month in your checks.*
 
-# In[ ]:
+# In[99]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
-errDateCountPairTuple = badRecords.<FILL IN>
-
-errDateSum = errDateCountPairTuple.<FILL IN>
+errDateCountPairTuple = badRecords.map(lambda log: (log.date_time.day, 1))
+errDateSum = errDateCountPairTuple.reduceByKey(lambda a, b: a + b)
 
 errDateSorted = (errDateSum
-                 <FILL IN>)
+                 .sortByKey().cache())
 
-errByDate = errDateSorted.<FILL IN>
+errByDate = errDateSorted.collect()
 print '404 Errors by day: %s' % errByDate
 
 
-# In[ ]:
+# In[100]:
 
 # TEST 404 response codes per day (4e)
 Test.assertEquals(errByDate, [(1, 243), (3, 303), (4, 346), (5, 234), (6, 372), (7, 532), (8, 381), (9, 279), (10, 314), (11, 263), (12, 195), (13, 216), (14, 287), (15, 326), (16, 258), (17, 269), (18, 255), (19, 207), (20, 312), (21, 305), (22, 288)], 'incorrect errByDate')
@@ -629,22 +635,22 @@ Test.assertTrue(errDateSorted.is_cached, 'incorrect errDateSorted.is_cached')
 # #### **(4f) Exercise: Visualizing the 404 Response Codes by Day**
 # ####Using the results from the previous exercise, use `matplotlib` to plot a "Line" or "Bar" graph of the 404 response codes by day.
 
-# In[ ]:
+# In[102]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
-daysWithErrors404 = errDateSorted.<FILL IN>
-errors404ByDay = errDateSorted.<FILL IN>
+daysWithErrors404 = errDateSorted.map(lambda (x, y): x).collect()
+errors404ByDay = errDateSorted.map(lambda (x, y): y).collect()
 
 
-# In[ ]:
+# In[103]:
 
 # TEST Visualizing the 404 Response Codes by Day (4f)
 Test.assertEquals(daysWithErrors404, [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], 'incorrect daysWithErrors404')
 Test.assertEquals(errors404ByDay, [243, 303, 346, 234, 372, 532, 381, 279, 314, 263, 195, 216, 287, 326, 258, 269, 255, 207, 312, 305, 288], 'incorrect errors404ByDay')
 
 
-# In[ ]:
+# In[104]:
 
 fig = plt.figure(figsize=(8,4.2), facecolor='white', edgecolor='white')
 plt.axis([0, max(daysWithErrors404), 0, max(errors404ByDay)])
@@ -658,15 +664,15 @@ pass
 # #### **(4g) Exercise: Top Five Days for 404 Response Codes **
 # ####Using the RDD `errDateSorted` you cached in the part (4e), what are the top five days for 404 response codes and the corresponding counts of 404 response codes?
 
-# In[ ]:
+# In[105]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
-topErrDate = errDateSorted.<FILL IN>
+topErrDate = errDateSorted.takeOrdered(5, lambda s: -1 * s[1])
 print 'Top Five dates for 404 requests: %s' % topErrDate
 
 
-# In[ ]:
+# In[106]:
 
 # TEST Five dates for 404 requests (4g)
 Test.assertEquals(topErrDate, [(7, 532), (8, 381), (6, 372), (4, 346), (15, 326)], 'incorrect topErrDate')
@@ -675,22 +681,23 @@ Test.assertEquals(topErrDate, [(7, 532), (8, 381), (6, 372), (4, 346), (15, 326)
 # #### **(4h) Exercise: Hourly 404 Response Codes**
 # ####Using the RDD `badRecords` you cached in the part (4a) and by hour of the day and in increasing order, create an RDD containing how many requests had a 404 return code for each hour of the day (midnight starts at 0). Cache the resulting RDD hourRecordsSorted and print that as a list.
 
-# In[ ]:
+# In[108]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
-hourCountPairTuple = badRecords.<FILL IN>
+hourCountPairTuple = badRecords.map(lambda log: (log.date_time.hour, 1))
 
-hourRecordsSum = hourCountPairTuple.<FILL IN>
+hourRecordsSum = hourCountPairTuple.reduceByKey(lambda a, b: a + b)
 
 hourRecordsSorted = (hourRecordsSum
-                     <FILL IN>)
+                     .sortByKey().cache())
 
-errHourList = hourRecordsSorted.<FILL IN>
+errHourList = hourRecordsSorted.collect()
 print 'Top hours for 404 requests: %s' % errHourList
 
 
-# In[ ]:
+
+# In[109]:
 
 # TEST Hourly 404 response codes (4h)
 Test.assertEquals(errHourList, [(0, 175), (1, 171), (2, 422), (3, 272), (4, 102), (5, 95), (6, 93), (7, 122), (8, 199), (9, 185), (10, 329), (11, 263), (12, 438), (13, 397), (14, 318), (15, 347), (16, 373), (17, 330), (18, 268), (19, 269), (20, 270), (21, 241), (22, 234), (23, 272)], 'incorrect errHourList')
@@ -700,22 +707,22 @@ Test.assertTrue(hourRecordsSorted.is_cached, 'incorrect hourRecordsSorted.is_cac
 # #### **(4i) Exercise: Visualizing the 404 Response Codes by Hour**
 # ####Using the results from the previous exercise, use `matplotlib` to plot a "Line" or "Bar" graph of the 404 response codes by hour.
 
-# In[ ]:
+# In[111]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
-hoursWithErrors404 = hourRecordsSorted.<FILL IN>
-errors404ByHours = hourRecordsSorted.<FILL IN>
+hoursWithErrors404 = hourRecordsSorted.map(lambda (x, y): x).collect()
+errors404ByHours = hourRecordsSorted.map(lambda (x, y): y).collect()
 
 
-# In[ ]:
+# In[112]:
 
 # TEST Visualizing the 404 Response Codes by Hour (4i)
 Test.assertEquals(hoursWithErrors404, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], 'incorrect hoursWithErrors404')
 Test.assertEquals(errors404ByHours, [175, 171, 422, 272, 102, 95, 93, 122, 199, 185, 329, 263, 438, 397, 318, 347, 373, 330, 268, 269, 270, 241, 234, 272], 'incorrect errors404ByHours')
 
 
-# In[ ]:
+# In[113]:
 
 fig = plt.figure(figsize=(8,4.2), facecolor='white', edgecolor='white')
 plt.axis([0, max(hoursWithErrors404), 0, max(errors404ByHours)])
@@ -724,4 +731,9 @@ plt.xlabel('Hour')
 plt.ylabel('404 Errors')
 plt.plot(hoursWithErrors404, errors404ByHours)
 pass
+
+
+# In[ ]:
+
+
 
