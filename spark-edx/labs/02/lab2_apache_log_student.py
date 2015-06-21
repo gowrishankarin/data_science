@@ -61,7 +61,7 @@
 # ### **(1a) Parsing Each Log Line**
 # ####Using the CLF as defined above, we create a regular expression pattern to extract the nine fields of the log line using the Python regular expression [`search` function](https://docs.python.org/2/library/re.html#regular-expression-objects). The function returns a pair consisting of a Row object and 1. If the log line fails to match the regular expression, the function returns a pair consisting of the log line string and 0. A '-' value in the content size field is cleaned up by substituting it with 0. The function converts the log line's date string into a Python `datetime` object using the given `parse_apache_time` function.
 
-# In[2]:
+# In[3]:
 
 import re
 import datetime
@@ -115,7 +115,7 @@ def parseApacheLogLine(logline):
     ), 1)
 
 
-# In[3]:
+# In[4]:
 
 # A regular expression pattern to extract fields from the log line
 APACHE_ACCESS_LOG_PATTERN = '^(\S+) (\S+) (\S+) \[([\w:/]+\s[+\-]\d{4})\] "(\S+) (\S+)\s*(\S*)" (\d{3}) (\S+)'
@@ -128,7 +128,7 @@ APACHE_ACCESS_LOG_PATTERN = '^(\S+) (\S+) (\S+) \[([\w:/]+\s[+\-]\d{4})\] "(\S+)
 # ####Next, we use [`map(parseApacheLogLine)`](http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.map) to apply the parse function to each element (that is, a line from the log file) in the RDD and turn each line into a pair [`Row` object](http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.Row).
 # ####Finally, we cache the RDD in memory since we'll use it throughout this notebook.
 
-# In[4]:
+# In[5]:
 
 import sys
 import os
@@ -173,7 +173,7 @@ parsed_logs, access_logs, failed_logs = parseLogs()
 #  
 # #### If you not familar with Python regular expression [`search` function](https://docs.python.org/2/library/re.html#regular-expression-objects), now would be a good time to check up on the [documentation](https://developers.google.com/edu/python/regular-expressions). One tip that might be useful is to use an online tester like http://pythex.org or http://www.pythonregex.com. To use it, copy and paste the regular expression string below (located between the single quotes ') and test it against one of the 'Invalid logline' above.
 
-# In[5]:
+# In[14]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
@@ -183,7 +183,7 @@ APACHE_ACCESS_LOG_PATTERN = '^(\S+) (\S+) (\S+) \[([\w:/]+\s[+\-]\d{4})\] "(\S+)
 parsed_logs, access_logs, failed_logs = parseLogs()
 
 
-# In[6]:
+# In[15]:
 
 # TEST Data cleaning (1c)
 Test.assertEquals(failed_logs.count(), 0, 'incorrect failed_logs.count()')
@@ -201,10 +201,9 @@ Test.assertEquals(access_logs.count(), parsed_logs.count(), 'incorrect access_lo
 #  
 # ####We can compute the statistics by applying a `map` to the `access_logs` RDD. The `lambda` function we want for the map is to extract the `content_size` field from the RDD. The map produces a new RDD containing only the `content_sizes` (one element for each Row object in the `access_logs` RDD). To compute the minimum and maximum statistics, we can use [`min()`](http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.min) and [`max()`](http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.max) functions on the new RDD. We can compute the average statistic by using the [`reduce`](http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.reduce) function with a `lambda` function that sums the two inputs, which represent two elements from the new RDD that are being reduced together. The result of the `reduce()` is the total content size from the log and it is to be divided by the number of requests as determined using the [`count()`](http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.count) function on the new RDD.
 
-# In[7]:
+# In[16]:
 
 # Calculate statistics based on the content size.
-print access_logs.count()
 content_sizes = access_logs.map(lambda log: log.content_size).cache()
 print 'Content Size Avg: %i, Min: %i, Max: %s' % (
     content_sizes.reduce(lambda a, b : a + b) / content_sizes.count(),
@@ -215,14 +214,13 @@ print 'Content Size Avg: %i, Min: %i, Max: %s' % (
 # #### **(2b) Example: Response Code Analysis**
 # ####Next, lets look at the response codes that appear in the log. As with the content size analysis, first we create a new RDD by using a `lambda` function to extract the `response_code` field from the `access_logs` RDD. The difference here is that we will use a [pair tuple](https://docs.python.org/2/tutorial/datastructures.html?highlight=tuple#tuples-and-sequences) instead of just the field itself. Using a pair tuple consisting of the response code and 1 will let us count how many records have a particular response code. Using the new RDD, we perform a [`reduceByKey`](http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.reduceByKey) function. `reduceByKey` performs a reduce on a per-key basis by applying the `lambda` function to each element, pairwise with the same key. We use the simple `lambda` function of adding the two values. Then, we cache the resulting RDD and create a list by using the [`take`](http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.take) function.
 
-# In[8]:
+# In[17]:
 
 # Response Code to Count
 responseCodeToCount = (access_logs
                        .map(lambda log: (log.response_code, 1))
                        .reduceByKey(lambda a, b : a + b)
                        .cache())
-print responseCodeToCount
 responseCodeToCountList = responseCodeToCount.take(100)
 print 'Found %d response codes' % len(responseCodeToCountList)
 print 'Response Code Counts: %s' % responseCodeToCountList
@@ -233,7 +231,7 @@ assert sorted(responseCodeToCountList) == [(200, 940847), (302, 16244), (304, 79
 # #### **(2c) Example: Response Code Graphing with `matplotlib`**
 # ####Now, lets visualize the results from the last example. We can visualize the results from the last example using [`matplotlib`](http://matplotlib.org/). First we need to extract the labels and fractions for the graph. We do this with two separate `map` functions with a `lambda` functions. The first `map` function extracts a list of of the response code values, and the second `map` function extracts a list of the per response code counts  divided by the total size of the access logs. Next, we create a figure with `figure()` constructor and use the `pie()` method to create the pie plot.
 
-# In[9]:
+# In[18]:
 
 labels = responseCodeToCount.map(lambda (x, y): x).collect()
 print labels
@@ -242,7 +240,7 @@ fracs = responseCodeToCount.map(lambda (x, y): (float(y) / count)).collect()
 print fracs
 
 
-# In[10]:
+# In[19]:
 
 import matplotlib.pyplot as plt
 
@@ -272,7 +270,7 @@ pass
 # #### **(2d) Example: Frequent Hosts**
 # ####Let's look at hosts that have accessed the server multiple times (e.g., more than ten times). As with the response code analysis in (2b), first we create a new RDD by using a `lambda` function to extract the `host` field from the `access_logs` RDD using a pair tuple consisting of the host and 1 which will let us count how many records were created by a particular host's request. Using the new RDD, we perform a `reduceByKey` function with a `lambda` function that adds the two values. We then filter the result based on the count of accesses by each host (the second element of each pair) being greater than ten. Next, we extract the host name by performing a `map` with a `lambda` function that returns the first element of each pair. Finally, we extract 20 elements from the resulting RDD - *note that the choice of which elements are returned is not guaranteed to be deterministic.*
 
-# In[11]:
+# In[20]:
 
 # Any hosts that has accessed the server more than 10 times.
 hostCountPairTuple = access_logs.map(lambda log: (log.host, 1))
@@ -294,7 +292,7 @@ print 'Any 20 hosts that have accessed more then 10 times: %s' % hostsPick20
 #  
 # ####Next we visualize the results using `matplotlib`. We previously imported the `matplotlib.pyplot` library, so we do not need to import it again. We perform two separate `map` functions with `lambda` functions. The first `map` function extracts a list of endpoint values, and the second `map` function extracts a list of the visits per endpoint values. Next, we create a figure with `figure()` constructor, set various features of the plot (axis limits, grid lines, and labels), and use the `plot()` method to create the line plot.
 
-# In[12]:
+# In[21]:
 
 endpoints = (access_logs
              .map(lambda log: (log.endpoint, 1))
@@ -315,7 +313,7 @@ pass
 # #### **(2f) Example: Top Endpoints**
 # ####For the final example, we'll look at the top endpoints (URIs) in the log. To determine them, we first create a new RDD by using a `lambda` function to extract the `endpoint` field from the `access_logs` RDD using a pair tuple consisting of the endpoint and 1 which will let us count how many records were created by a particular host's request. Using the new RDD, we perform a `reduceByKey` function with a `lambda` function that adds the two values. We then extract the top ten endpoints by performing a [`takeOrdered`](http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.takeOrdered) with a value of 10 and a `lambda` function that multiplies the count (the second element of each pair) by -1 to create a sorted list with the top endpoints at the bottom.
 
-# In[13]:
+# In[22]:
 
 # Top Endpoints
 endpointCounts = (access_logs
@@ -339,7 +337,7 @@ assert topEndpoints == [(u'/images/NASA-logosmall.gif', 59737), (u'/images/KSC-l
 #  
 # ####You might want to refer back to the previous Lab (Lab 1 Word Count) for insights.
 
-# In[14]:
+# In[26]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # HINT: Each of these <FILL IN> below could be completed with a single transformation or action.
@@ -348,15 +346,15 @@ assert topEndpoints == [(u'/images/NASA-logosmall.gif', 59737), (u'/images/KSC-l
 
 not200 = access_logs.filter(lambda log: log.response_code != 200)
 
-endpointCountPairTuple = not200.map(lambda log: (log.endpoint, 1))
+endpointCountPairTuple = not200.map(lambda x: (x.endpoint, 1))
 
-endpointSum = (endpointCountPairTuple.reduceByKey(lambda a, b: a + b).cache())
+endpointSum = endpointCountPairTuple.reduceByKey(lambda a, b: a + b)
 
 topTenErrURLs = endpointSum.takeOrdered(10, lambda s: -1 * s[1])
 print 'Top Ten failed URLs: %s' % topTenErrURLs
 
 
-# In[18]:
+# In[27]:
 
 # TEST Top ten error endpoints (3a)
 Test.assertEquals(endpointSum.count(), 7689, 'incorrect count for endpointSum')
@@ -368,20 +366,20 @@ Test.assertEquals(topTenErrURLs, [(u'/images/NASA-logosmall.gif', 8761), (u'/ima
 #  
 # ####Think about the steps that you need to perform to count the number of different hosts in the log.
 
-# In[ ]:
+# In[28]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # HINT: Do you recall the tips from (3a)? Each of these <FILL IN> could be an transformation or action.
 
-hosts = access_logs.map(lambda log: (log.host, 1)).cache()
+hosts = access_logs.map(lambda log: (log.host, 1))
 
-uniqueHosts = hosts.reduce(lambda a, b: a + b)
+uniqueHosts = hosts.reduceByKey(lambda a, b: a + b)
 
 uniqueHostCount = uniqueHosts.count()
 print 'Unique hosts: %d' % uniqueHostCount
 
 
-# In[ ]:
+# In[29]:
 
 # TEST Number of unique hosts (3b)
 Test.assertEquals(uniqueHostCount, 54507, 'incorrect uniqueHostCount')
