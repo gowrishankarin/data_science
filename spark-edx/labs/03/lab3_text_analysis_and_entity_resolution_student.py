@@ -32,7 +32,7 @@
 # #### The file format of a Google line is:
 #    `"id","name","description","manufacturer","price"`
 
-# In[1]:
+# In[5]:
 
 import re
 DATAFILE_PATTERN = '^(.+),"(.+)",(.*),(.*),(.*)'
@@ -66,7 +66,7 @@ def parseDatafileLine(datafileLine):
         return ((removeQuotes(match.group(1)), product), 1)
 
 
-# In[2]:
+# In[6]:
 
 import sys
 import os
@@ -128,7 +128,7 @@ amazon = loadData(AMAZON_PATH)
 
 # #### Let's examine the lines that were just loaded in the two subset (small) files - one from Google and one from Amazon
 
-# In[5]:
+# In[7]:
 
 for line in googleSmall.take(3):
     print 'google: %s: %s\n' % (line[0], line[1])
@@ -150,7 +150,7 @@ for line in amazonSmall.take(3):
 # #### Implement the function `simpleTokenize(string)` that takes a string and returns a list of non-empty tokens in the string. `simpleTokenize` should split strings using the provided regular expression. Since we want to make token-matching case insensitive, make sure all tokens are turned lower-case. Give an interpretation, in natural language, of what the regular expression, `split_regex`, matches.
 # #### If you need help with Regular Expressions, try the site [regex101](https://regex101.com/) where you can interactively explore the results of applying different regular expressions to strings. *Note that \W includes the "_" character*.  You should use [re.split()](https://docs.python.org/2/library/re.html#re.split) to perform the string split. Also, make sure you remove any empty tokens.
 
-# In[53]:
+# In[8]:
 
 # TODO: Replace <FILL IN> with appropriate code
 quickbrownfox = 'A quick brown fox jumps over the lazy dog.'
@@ -170,7 +170,7 @@ print simpleTokenize(quickbrownfox) # Should give ['a', 'quick', 'brown', ... ]
 print simpleTokenize('!!!!123A/456_B/789C.123A')
 
 
-# In[56]:
+# In[9]:
 
 # TEST Tokenize a String (1a)
 Test.assertEquals(simpleTokenize(quickbrownfox),
@@ -188,7 +188,7 @@ Test.assertEquals(simpleTokenize('fox fox'), ['fox', 'fox'],
 # #### Using the included file "stopwords.txt", implement `tokenize`, an improved tokenizer that does not emit stopwords.
 # [stopwords]: https://en.wikipedia.org/wiki/Stop_words
 
-# In[71]:
+# In[10]:
 
 # TODO: Replace <FILL IN> with appropriate code
 stopfile = os.path.join(baseDir, inputPath, STOPWORDS_PATH)
@@ -210,7 +210,7 @@ def tokenize(string):
 print tokenize(quickbrownfox) # Should give ['quick', 'brown', ... ]
 
 
-# In[72]:
+# In[11]:
 
 # TEST Removing stopwords (1b)
 Test.assertEquals(tokenize("Why a the?"), [], 'tokenize should remove all stopwords')
@@ -223,7 +223,7 @@ Test.assertEquals(tokenize(quickbrownfox), ['quick','brown','fox','jumps','lazy'
 # #### Now let's tokenize the two *small* datasets. For each ID in a dataset, `tokenize` the values, and then count the total number of tokens.
 # #### How many tokens, total, are there in the two datasets?
 
-# In[100]:
+# In[12]:
 
 # TODO: Replace <FILL IN> with appropriate code
 amazonRecToToken = amazonSmall
@@ -244,7 +244,7 @@ totalTokens = countTokens(amazonRecToToken) + countTokens(googleRecToToken)
 print 'There are %s tokens in the combined datasets' % totalTokens
 
 
-# In[101]:
+# In[13]:
 
 # TEST Tokenizing the small datasets (1c)
 Test.assertEquals(totalTokens, 22520, 'incorrect totalTokens')
@@ -254,7 +254,7 @@ Test.assertEquals(totalTokens, 22520, 'incorrect totalTokens')
 # #### Which Amazon record has the biggest number of tokens?
 # #### In other words, you want to sort the records and get the one with the largest count of tokens.
 
-# In[120]:
+# In[14]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def findBiggestRecord(vendorRDD):
@@ -273,7 +273,7 @@ print 'The Amazon record with ID "%s" has the most tokens (%s)' % (biggestRecord
                                                                    len(biggestRecordAmazon[0][1]))
 
 
-# In[121]:
+# In[15]:
 
 # TEST Amazon record with the most tokens (1d)
 Test.assertEquals(biggestRecordAmazon[0][0], 'b000o24l3q', 'incorrect biggestRecordAmazon')
@@ -302,7 +302,9 @@ Test.assertEquals(len(biggestRecordAmazon[0][1]), 1547, 'incorrect len for bigge
 # * #### For each of the tokens in the input `tokens` list, count 1 for each occurance and add the token to the dictionary
 # * #### For each of the tokens in the dictionary, divide the token's count by the total number of tokens in the input `tokens` list
 
-# In[ ]:
+# In[46]:
+
+from collections import Counter
 
 # TODO: Replace <FILL IN> with appropriate code
 def tf(tokens):
@@ -312,13 +314,16 @@ def tf(tokens):
     Returns:
         dictionary: a dictionary of tokens to its TF values
     """
-    <FILL IN>
-    return <FILL IN>
+    dictionary = {}
+    wordCounts = Counter(tokens)
+    for k, v in wordCounts.items():
+        dictionary[k] = float(v)/len(tokens)
+    return dictionary
 
 print tf(tokenize(quickbrownfox)) # Should give { 'quick': 0.1666 ... }
 
 
-# In[ ]:
+# In[47]:
 
 # TEST Implement a TF function (2a)
 tf_test = tf(tokenize(quickbrownfox))
@@ -334,13 +339,19 @@ Test.assertEquals(tf_test2, {'one_': 0.6666666666666666, 'two': 0.33333333333333
 # ### **(2b) Create a corpus**
 # #### Create a pair RDD called `corpusRDD`, consisting of a combination of the two small datasets, `amazonRecToToken` and `googleRecToToken`. Each element of the `corpusRDD` should be a pair consisting of a key from one of the small datasets (ID or URL) and the value is the associated value for that key from the small datasets.
 
-# In[ ]:
+# In[104]:
 
 # TODO: Replace <FILL IN> with appropriate code
-corpusRDD = <FILL IN>
+amazonSmallPair = amazonSmall.map(lambda (x, y): (x, tokenize(y)))
+googleSmallPair = googleSmall.map(lambda (x, y): (x, tokenize(y)))
+
+amazonRecToToken = amazonSmallPair
+googleRecToToken = googleSmallPair
+
+corpusRDD = amazonSmallPair.union(googleSmallPair)
 
 
-# In[ ]:
+# In[105]:
 
 # TEST Create a corpus (2b)
 Test.assertEquals(corpusRDD.count(), 400, 'incorrect corpusRDD.count()')
@@ -359,7 +370,7 @@ Test.assertEquals(corpusRDD.count(), 400, 'incorrect corpusRDD.count()')
 # #### Use your `idfs` to compute the IDF weights for all tokens in `corpusRDD` (the combined small datasets).
 # #### How many unique tokens are there?
 
-# In[ ]:
+# In[134]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def idfs(corpus):
@@ -369,11 +380,12 @@ def idfs(corpus):
     Returns:
         RDD: a RDD of (token, IDF value)
     """
-    N = <FILL IN>
-    uniqueTokens = corpus.<FILL IN>
-    tokenCountPairTuple = uniqueTokens.<FILL IN>
-    tokenSumPairTuple = tokenCountPairTuple.<FILL IN>
-    return (tokenSumPairTuple.<FILL IN>)
+    N = corpus.count()
+    
+    uniqueTokens = corpus.flatMap(lambda x: set(x[1]))
+    tokenCountPairTuple = uniqueTokens.map(lambda x: (x, 1))
+    tokenSumPairTuple = tokenCountPairTuple.reduceByKey(lambda a, b: a + b)
+    return tokenSumPairTuple.map(lambda (a, b): (a, float(N)/b))
 
 idfsSmall = idfs(amazonRecToToken.union(googleRecToToken))
 uniqueTokenCount = idfsSmall.count()
@@ -381,7 +393,7 @@ uniqueTokenCount = idfsSmall.count()
 print 'There are %s unique tokens in the small datasets.' % uniqueTokenCount
 
 
-# In[ ]:
+# In[135]:
 
 # TEST Implement an IDFs function (2c)
 Test.assertEquals(uniqueTokenCount, 4772, 'incorrect uniqueTokenCount')
@@ -394,7 +406,7 @@ Test.assertTrue(abs(tokenSmallestIdf[1] - 4.25531914894) < 0.0000000001,
 # ### **(2d) Tokens with the smallest IDF**
 # #### Print out the 11 tokens with the smallest IDF in the combined small dataset.
 
-# In[ ]:
+# In[136]:
 
 smallIDFTokens = idfsSmall.takeOrdered(11, lambda s: s[1])
 print smallIDFTokens
@@ -404,7 +416,7 @@ print smallIDFTokens
 # #### Plot a histogram of IDF values.  Be sure to use appropriate scaling and bucketing for the data.
 # #### First plot the histogram using `matplotlib`
 
-# In[ ]:
+# In[137]:
 
 import matplotlib.pyplot as plt
 
@@ -421,7 +433,7 @@ pass
 # * #### Create a Python dictionary where each token maps to the token's frequency times the token's IDF weight
 # #### Use your `tfidf` function to compute the weights of Amazon product record 'b000hkgj8k'. To do this, we need to extract the record for the token from the tokenized small Amazon dataset and we need to convert the IDFs for the small dataset into a Python dictionary. We can do the first part, by using a `filter()` transformation to extract the matching record and a `collect()` action to return the value to the driver. For the second part, we use the [`collectAsMap()` action](http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.collectAsMap) to return the IDFs to the driver as a Python dictionary.
 
-# In[ ]:
+# In[139]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def tfidf(tokens, idfs):
@@ -432,8 +444,8 @@ def tfidf(tokens, idfs):
     Returns:
         dictionary: a dictionary of records to TF-IDF values
     """
-    tfs = <FILL IN>
-    tfIdfDict = <FILL IN>
+    tfs = tf(tokens)
+    tfIdfDict = {k: v*idfs[k] for k, v in tfs.items()}
     return tfIdfDict
 
 recb000hkgj8k = amazonRecToToken.filter(lambda x: x[0] == 'b000hkgj8k').collect()[0][1]
@@ -443,7 +455,7 @@ rec_b000hkgj8k_weights = tfidf(recb000hkgj8k, idfsSmallWeights)
 print 'Amazon record "b000hkgj8k" has tokens and weights:\n%s' % rec_b000hkgj8k_weights
 
 
-# In[ ]:
+# In[141]:
 
 # TEST Implement a TF-IDF function (2f)
 Test.assertEquals(rec_b000hkgj8k_weights,
@@ -472,7 +484,7 @@ Test.assertEquals(rec_b000hkgj8k_weights,
 # * #### Define a function `norm` that returns the square root of the dot product of a dictionary and itself
 # * #### Define a function `cossim` that returns the dot product of two dictionaries divided by the norm of the first dictionary and then by the norm of the second dictionary
 
-# In[ ]:
+# In[160]:
 
 # TODO: Replace <FILL IN> with appropriate code
 import math
@@ -485,7 +497,7 @@ def dotprod(a, b):
     Returns:
         dotProd: result of the dot product with the two input dictionaries
     """
-    return <FILL IN>
+    return sum([v * b[k] for k, v in a.items() if k in b.keys()])
 
 def norm(a):
     """ Compute square root of the dot product
@@ -494,7 +506,7 @@ def norm(a):
     Returns:
         norm: a dictionary of tokens to its TF values
     """
-    return <FILL IN>
+    return dotprod(a, a) ** (1/2.0)
 
 def cossim(a, b):
     """ Compute cosine similarity
@@ -505,7 +517,7 @@ def cossim(a, b):
         cossim: dot product of two dictionaries divided by the norm of the first dictionary and
                 then by the norm of the second dictionary
     """
-    return <FILL IN>
+    return dotprod(a, b) /(norm(a) * norm(b))
 
 testVec1 = {'foo': 2, 'bar': 3, 'baz': 5 }
 testVec2 = {'foo': 1, 'bar': 0, 'baz': 20 }
@@ -514,7 +526,7 @@ nm = norm(testVec1)
 print dp, nm
 
 
-# In[ ]:
+# In[161]:
 
 # TEST Implement the components of a cosineSimilarity function (3a)
 Test.assertEquals(dp, 102, 'incorrect dp')
@@ -527,7 +539,7 @@ Test.assertTrue(abs(nm - 6.16441400297) < 0.0000001, 'incorrrect nm')
 # * #### Apply your `tfidf` function to the tokenized first and second strings, using the dictionary of IDF weights
 # * #### Compute and return your `cossim` function applied to the results of the two `tfidf` functions
 
-# In[ ]:
+# In[162]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def cosineSimilarity(string1, string2, idfsDictionary):
@@ -539,8 +551,10 @@ def cosineSimilarity(string1, string2, idfsDictionary):
     Returns:
         cossim: cosine similarity value
     """
-    w1 = tfidf(<FILL IN>)
-    w2 = tfidf(<FILL IN>)
+    w1 = tfidf(tf(tokenize(string1)), idfsDictionary)
+    w2 = tfidf(tf(tokenize(string2)), idfsDictionary)
+    print w1
+    print w2
     return cossim(w1, w2)
 
 cossimAdobe = cosineSimilarity('Adobe Photoshop',
@@ -550,7 +564,7 @@ cossimAdobe = cosineSimilarity('Adobe Photoshop',
 print cossimAdobe
 
 
-# In[ ]:
+# In[163]:
 
 # TEST Implement a cosineSimilarity function (3b)
 Test.assertTrue(abs(cossimAdobe - 0.0577243382163) < 0.0000001, 'incorrect cossimAdobe')
@@ -566,13 +580,13 @@ Test.assertTrue(abs(cossimAdobe - 0.0577243382163) < 0.0000001, 'incorrect cossi
 # * #### Apply the worker function to every element in the RDD
 # #### Now, compute the similarity between Amazon record `b000o24l3q` and Google record `http://www.google.com/base/feeds/snippets/17242822440574356561`.
 
-# In[ ]:
+# In[189]:
 
 # TODO: Replace <FILL IN> with appropriate code
 crossSmall = (googleSmall
-              .<FILL IN>
+              .cartesian(amazonSmall)
               .cache())
-
+    
 def computeSimilarity(record):
     """ Compute similarity on a combination record
     Args:
@@ -582,16 +596,17 @@ def computeSimilarity(record):
     """
     googleRec = record[0]
     amazonRec = record[1]
-    googleURL = <FILL IN>
-    amazonID = <FILL IN>
-    googleValue = <FILL IN>
-    amazonValue = <FILL IN>
-    cs = cosineSimilarity(<FILL IN>, idfsSmallWeights)
+    googleURL = googleRec[0]
+    amazonID = amazonRec[0]
+    googleValue = googleRec[1]
+    amazonValue = amazonRec[1]
+    cs = cosineSimilarity(googleValue, amazonValue, idfsSmallWeights)
     return (googleURL, amazonID, cs)
 
 similarities = (crossSmall
-                .<FILL IN>
+                .map(lambda record : computeSimilarity(record))
                 .cache())
+
 
 def similar(amazonID, googleURL):
     """ Return similarity value
@@ -609,7 +624,7 @@ similarityAmazonGoogle = similar('b000o24l3q', 'http://www.google.com/base/feeds
 print 'Requested similarity is %s.' % similarityAmazonGoogle
 
 
-# In[ ]:
+# In[190]:
 
 # TEST Perform Entity Resolution (3c)
 Test.assertTrue(abs(similarityAmazonGoogle - 0.000303171940451) < 0.0000001,
@@ -624,7 +639,7 @@ Test.assertTrue(abs(similarityAmazonGoogle - 0.000303171940451) < 0.0000001,
 # * #### Apply the worker function to every element in the RDD
 # #### Again, compute the similarity between Amazon record `b000o24l3q` and Google record `http://www.google.com/base/feeds/snippets/17242822440574356561`.
 
-# In[ ]:
+# In[191]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def computeSimilarityBroadcast(record):
@@ -636,16 +651,16 @@ def computeSimilarityBroadcast(record):
     """
     googleRec = record[0]
     amazonRec = record[1]
-    googleURL = <FILL IN>
-    amazonID = <FILL IN>
-    googleValue = <FILL IN>
-    amazonValue = <FILL IN>
-    cs = cosineSimilarity(<FILL IN>, idfsSmallBroadcast.value)
+    googleURL = googleRec[0]
+    amazonID = amazonRec[0]
+    googleValue = googleRec[1]
+    amazonValue = amazonRec[1]
+    cs = cosineSimilarity(googleValue, amazonValue, idfsSmallBroadcast.value)
     return (googleURL, amazonID, cs)
 
 idfsSmallBroadcast = sc.broadcast(idfsSmallWeights)
 similaritiesBroadcast = (crossSmall
-                         .<FILL IN>
+                         .map(lambda record : computeSimilarity(record))
                          .cache())
 
 def similarBroadcast(amazonID, googleURL):
@@ -664,7 +679,7 @@ similarityAmazonGoogleBroadcast = similarBroadcast('b000o24l3q', 'http://www.goo
 print 'Requested similarity is %s.' % similarityAmazonGoogleBroadcast
 
 
-# In[ ]:
+# In[192]:
 
 # TEST Perform Entity Resolution with Broadcast Variables (3d)
 from pyspark import Broadcast
@@ -677,7 +692,7 @@ Test.assertTrue(abs(similarityAmazonGoogleBroadcast - 0.000303171940451) < 0.000
 # ### **(3e) Perform a Gold Standard evaluation**
 # #### First, we'll load the "gold standard" data and use it to answer several questions. We read and parse the Gold Standard data, where the format of each line is "Amazon Product ID","Google URL". The resulting RDD has elements of the form ("AmazonID GoogleURL", 'gold')
 
-# In[ ]:
+# In[194]:
 
 GOLDFILE_PATTERN = '^(.+),(.+)'
 
@@ -717,6 +732,8 @@ goldStandard = (gsRaw
                 .map(lambda s: s[0])
                 .cache())
 
+print goldStandard.take(2)
+
 print 'Read %d lines, successfully parsed %d lines, failed to parse %d lines' % (gsRaw.count(),
                                                                                  goldStandard.count(),
                                                                                  gsFailed.count())
@@ -736,26 +753,29 @@ assert (gsRaw.count() == (goldStandard.count() + 1))
 # * #### Create a new `nonDupsRDD` RDD that has the just the cosine similarity scores for those "AmazonID GoogleURL" pairs from the `similaritiesBroadcast` RDD that **do not** appear in both the *sims* RDD and gold standard RDD.
 # * #### Compute the average similarity score for non-duplicates in the last datasets. Remember to use `float` for calculation
 
-# In[ ]:
+# In[248]:
 
 # TODO: Replace <FILL IN> with appropriate code
-sims = similaritiesBroadcast.<FILL IN>)
+sims = similaritiesBroadcast.map(lambda x: (x[1] + " " + x[0], x[2]))
 
 trueDupsRDD = (sims
-               .<FILL IN>)
-trueDupsCount = trueDupsRDD.<FILL IN>
-avgSimDups = <FILL IN>
+               .join(goldStandard))
+trueDupsCount = trueDupsRDD.count()
+avgSimDups = sum(trueDupsRDD.map(lambda (x, y): y[0]).collect())/trueDupsCount
 
 nonDupsRDD = (sims
-              .<FILL IN>)
-avgSimNon = <FILL IN>
+              .subtractByKey(goldStandard))
+
+print nonDupsRDD.take(3)
+
+avgSimNon = sum(nonDupsRDD.map(lambda (x, y): y).collect())/nonDupsRDD.count()
 
 print 'There are %s true duplicates.' % trueDupsCount
 print 'The average similarity of true duplicates is %s.' % avgSimDups
 print 'And for non duplicates, it is %s.' % avgSimNon
 
 
-# In[ ]:
+# In[249]:
 
 # TEST Perform a Gold Standard evaluation (3e)
 Test.assertEquals(trueDupsCount, 146, 'incorrect trueDupsCount')
