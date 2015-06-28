@@ -796,16 +796,16 @@ Test.assertTrue(abs(avgSimNon - 0.00123476304656) < 0.0000001, 'incorrect avgSim
 # ### **(4a) Tokenize the full dataset**
 # #### Tokenize each of the two full datasets for Google and Amazon.
 
-# In[ ]:
+# In[250]:
 
 # TODO: Replace <FILL IN> with appropriate code
-amazonFullRecToToken = amazon.<FILL IN>
-googleFullRecToToken = google.<FILL IN>
+amazonFullRecToToken = amazon.map(lambda (x, y): (x, tokenize(y)))
+googleFullRecToToken = google.map(lambda (x, y): (x, tokenize(y)))
 print 'Amazon full dataset is %s products, Google full dataset is %s products' % (amazonFullRecToToken.count(),
                                                                                     googleFullRecToToken.count())
 
 
-# In[ ]:
+# In[251]:
 
 # TEST Tokenize the full dataset (4a)
 Test.assertEquals(amazonFullRecToToken.count(), 1363, 'incorrect amazonFullRecToToken.count()')
@@ -820,26 +820,27 @@ Test.assertEquals(googleFullRecToToken.count(), 3226, 'incorrect googleFullRecTo
 # * #### Create a broadcast variable containing a dictionary of the IDF weights for the full dataset.
 # * #### For each of the Amazon and Google full datasets, create weight RDDs that map IDs/URLs to TF-IDF weighted token vectors.
 
-# In[ ]:
+# In[292]:
 
 # TODO: Replace <FILL IN> with appropriate code
-fullCorpusRDD = <FILL IN>
+fullCorpusRDD = amazonFullRecToToken.union(googleFullRecToToken)
 idfsFull = idfs(fullCorpusRDD)
 idfsFullCount = idfsFull.count()
 print 'There are %s unique tokens in the full datasets.' % idfsFullCount
 
 # Recompute IDFs for full dataset
-idfsFullWeights = <FILL IN>
-idfsFullBroadcast = <FILL IN>
+idfsFullWeights = idfsFull.collectAsMap()
+idfsFullBroadcast = sc.broadcast(idfsFullWeights)
 
 # Pre-compute TF-IDF weights.  Build mappings from record ID weight vector.
-amazonWeightsRDD = <FILL IN>
-googleWeightsRDD = <FILL IN>
+amazonWeightsRDD = amazonFullRecToToken.map(lambda (x, y): (x, tfidf(y, idfsFullWeights)))
+googleWeightsRDD = googleFullRecToToken.map(lambda (x, y): (x, tfidf(y, idfsFullWeights)))
+
 print 'There are %s Amazon weights and %s Google weights.' % (amazonWeightsRDD.count(),
                                                               googleWeightsRDD.count())
 
 
-# In[ ]:
+# In[293]:
 
 # TEST Compute IDFs and TF-IDFs for the full datasets (4b)
 Test.assertEquals(idfsFullCount, 17078, 'incorrect idfsFullCount')
@@ -853,16 +854,16 @@ Test.assertEquals(googleWeightsRDD.count(), 3226, 'incorrect googleWeightsRDD.co
 # * #### Create two collections, one for each of the full Amazon and Google datasets, where IDs/URLs map to the norm of the associated TF-IDF weighted token vectors.
 # * #### Convert each collection into a broadcast variable, containing a dictionary of the norm of IDF weights for the full dataset
 
-# In[ ]:
+# In[306]:
 
 # TODO: Replace <FILL IN> with appropriate code
-amazonNorms = amazonWeightsRDD.<FILL IN>
-amazonNormsBroadcast = <FILL IN>
-googleNorms = googleWeightsRDD.<FILL IN>
-googleNormsBroadcast = <FILL IN>
+amazonNorms = amazonWeightsRDD.map(lambda (k, v): (k, norm(v)))
+amazonNormsBroadcast = sc.broadcast(amazonNorms.collectAsMap())
+googleNorms = googleWeightsRDD.map(lambda (k, v): (k, norm(v)))
+googleNormsBroadcast = sc.broadcast(googleNorms.collectAsMap())
 
 
-# In[ ]:
+# In[307]:
 
 # TEST Compute Norms for the weights from the full datasets (4c)
 Test.assertTrue(isinstance(amazonNormsBroadcast, Broadcast), 'incorrect amazonNormsBroadcast')
@@ -877,7 +878,7 @@ Test.assertEquals(len(googleNormsBroadcast.value), 3226, 'incorrect googleNormsB
 # * #### Create an invert function that given a pair of (ID/URL, TF-IDF weighted token vector), returns a list of pairs of (token, ID/URL). Recall that the TF-IDF weighted token vector is a Python dictionary with keys that are tokens and values that are weights.
 # * #### Use your invert function to convert the full Amazon and Google TF-IDF weighted token vector datasets into two RDDs where each element is a pair of a token and an ID/URL that contain that token. These are inverted indicies.
 
-# In[ ]:
+# In[365]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def invert(record):
@@ -887,22 +888,27 @@ def invert(record):
     Returns:
         pairs: a list of pairs of token to ID
     """
-    <FILL IN>
+    pairs = sc.parallelize([record]).map(lambda (x, y): (y.keys(), x)).collect()
     return (pairs)
 
+print invert((1, {'foo': 2, 'goo': 2}))
+#print invert(amazonWeightsRDD.take(1))
+
+
+
 amazonInvPairsRDD = (amazonWeightsRDD
-                    .<FILL IN>
+                    .map(lambda x: invert(x))
                     .cache())
 
 googleInvPairsRDD = (googleWeightsRDD
-                    .<FILL IN>
+                    .map(lambda x: invert(x))
                     .cache())
 
 print 'There are %s Amazon inverted pairs and %s Google inverted pairs.' % (amazonInvPairsRDD.count(),
                                                                             googleInvPairsRDD.count())
 
 
-# In[ ]:
+# In[366]:
 
 # TEST Create inverted indicies from the full datasets (4d)
 invertedPair = invert((1, {'foo': 2}))
