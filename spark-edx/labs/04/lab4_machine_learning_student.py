@@ -18,7 +18,7 @@
 # ### Code
 # #### This assignment can be completed using basic Python and pySpark Transformations and Actions.  Libraries other than math are not necessary. With the exception of the ML functions that we introduce in this assignment, you should be able to complete all parts of this homework using only the Spark functions you have used in prior lab exercises (although you are welcome to use more features of Spark if you like!).
 
-# In[9]:
+# In[36]:
 
 import sys
 import os
@@ -44,7 +44,7 @@ moviesFilename = os.path.join(baseDir, inputPath, 'movies.dat')
 # * #### For each line in the ratings dataset, we create a tuple of (UserID, MovieID, Rating). We drop the timestamp because we do not need it for this exercise.
 # * #### For each line in the movies dataset, we create a tuple of (MovieID, Title). We drop the Genres because we do not need them for this exercise.
 
-# In[10]:
+# In[37]:
 
 numPartitions = 2
 rawRatings = sc.textFile(ratingsFilename).repartition(numPartitions)
@@ -96,7 +96,7 @@ assert (ratingsRDD.takeOrdered(1, key=lambda (user, movie, rating): movie)
 # #### You can try running this multiple times.  If the last assertion fails, don't worry about it: that was just the luck of the draw.  And note that in some environments the results may be more deterministic.
 # [sortbykey]: https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.sortByKey
 
-# In[11]:
+# In[38]:
 
 tmp1 = [(1, u'alpha'), (2, u'alpha'), (2, u'beta'), (3, u'alpha'), (1, u'epsilon'), (1, u'delta')]
 tmp2 = [(1, u'delta'), (2, u'alpha'), (2, u'beta'), (3, u'alpha'), (1, u'epsilon'), (1, u'alpha')]
@@ -115,7 +115,7 @@ assert oneSorted[0:2] != twoSorted[0:2]     # Note that the subset consisting of
 # #### Even though the two lists contain identical tuples, the difference in ordering *sometimes* yields a different ordering for the sorted RDD (try running the cell repeatedly and see if the results change or the assertion fails). If we only examined the first two elements of the RDD (e.g., using `take(2)`), then we would observe different answers - **that is a really bad outcome as we want identical input data to always yield identical output**. A better technique is to sort the RDD by *both the key and value*, which we can do by combining the key and value into a single string and then sorting on that string. Since the key is an integer and the value is a unicode string, we can use a function to combine them into a single unicode string (e.g., `unicode('%.3f' % key) + ' ' + value`) before sorting the RDD using [sortBy()][sortby].
 # [sortby]: https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.sortBy
 
-# In[12]:
+# In[39]:
 
 def sortFunction(tuple):
     """ Construct the sort string (does not perform actual sorting)
@@ -136,7 +136,7 @@ print twoRDD.sortBy(sortFunction, True).collect()
 # #### If we just want to look at the first few elements of the RDD in sorted order, we can use the [takeOrdered][takeordered] method with the `sortFunction` we defined.
 # [takeordered]: https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.takeOrdered
 
-# In[13]:
+# In[40]:
 
 oneSorted1 = oneRDD.takeOrdered(oneRDD.count(),key=sortFunction)
 twoSorted1 = twoRDD.takeOrdered(twoRDD.count(),key=sortFunction)
@@ -151,7 +151,7 @@ assert oneSorted1 == twoSorted1
 # #### **(1a) Number of Ratings and Average Ratings for a Movie**
 # #### Using only Python, implement a helper function `getCountsAndAverages()` that takes a single tuple of (MovieID, (Rating1, Rating2, Rating3, ...)) and returns a tuple of (MovieID, (number of ratings, averageRating)). For example, given the tuple `(100, (10.0, 20.0, 30.0))`, your function should return `(100, (3, 20.0))`
 
-# In[19]:
+# In[41]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
@@ -167,7 +167,7 @@ def getCountsAndAverages(IDandRatingsTuple):
     return IDandRatingsAveTuple
 
 
-# In[20]:
+# In[42]:
 
 # TEST Number of Ratings and Average Ratings for a Movie (1a)
 
@@ -186,7 +186,7 @@ Test.assertEquals(getCountsAndAverages((110, xrange(20))), (110, (20, 9.5)),
 # * #### Using `movieIDsWithRatingsRDD` and your `getCountsAndAverages()` helper function, compute the number of ratings and average rating for each movie to yield tuples of the form (MovieID, (number of ratings, average rating)). This transformation will yield an RDD of the form: `[(1, (993, 4.145015105740181)), (2, (332, 3.174698795180723)), (3, (299, 3.0468227424749164))]`. You can do this step with one Spark transformation
 # * #### We want to see movie names, instead of movie IDs. To `moviesRDD`, apply RDD transformations that use `movieIDsWithAvgRatingsRDD` to get the movie names for `movieIDsWithAvgRatingsRDD`, yielding tuples of the form (average rating, movie name, number of ratings). This set of transformations will yield an RDD of the form: `[(1.0, u'Autopsy (Macchie Solari) (1975)', 1), (1.0, u'Better Living (1998)', 1), (1.0, u'Big Squeeze, The (1996)', 3)]`. You will need to do two Spark transformations to complete this step: first use the `moviesRDD` with `movieIDsWithAvgRatingsRDD` to create a new RDD with Movie names matched to Movie IDs, then convert that RDD into the form of (average rating, movie name, number of ratings). These transformations will yield an RDD that looks like: `[(3.6818181818181817, u'Happiest Millionaire, The (1967)', 22), (3.0468227424749164, u'Grumpier Old Men (1995)', 299), (2.882978723404255, u'Hocus Pocus (1993)', 94)]`
 
-# In[40]:
+# In[43]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
@@ -206,11 +206,11 @@ print 'movieIDsWithAvgRatingsRDD: %s\n' % movieIDsWithAvgRatingsRDD.take(3)
 # (average rating, movie name, number of ratings)
 # Movies: [(1, u'Toy Story (1995)'), (2, u'Jumanji (1995)'), (3, u'Grumpier Old Men (1995)')]
 movieNameWithAvgRatingsRDD = (moviesRDD
-                              .join(movieIDsWithAvgRatingsRDD).groupByKey())
+                              .join(movieIDsWithAvgRatingsRDD).map(lambda (x, (a, b)): (b[1], a, b[0])))
 print 'movieNameWithAvgRatingsRDD: %s\n' % movieNameWithAvgRatingsRDD.take(3)
 
 
-# In[41]:
+# In[44]:
 
 # TEST Movies with Highest Average Ratings (1b)
 
@@ -246,7 +246,7 @@ Test.assertEquals(movieNameWithAvgRatingsRDD.takeOrdered(3),
 # #### Now that we have an RDD of the movies with highest averge ratings, we can use Spark to determine the 20 movies with highest average ratings and more than 500 reviews.
 # #### Apply a single RDD transformation to `movieNameWithAvgRatingsRDD` to limit the results to movies with ratings from more than 500 people. We then use the `sortFunction()` helper function to sort by the average rating to get the movies in order of their rating (highest rating first). You will end up with an RDD of the form: `[(4.5349264705882355, u'Shawshank Redemption, The (1994)', 1088), (4.515798462852263, u"Schindler's List (1993)", 1171), (4.512893982808023, u'Godfather, The (1972)', 1047)]`
 
-# In[ ]:
+# In[45]:
 
 # TODO: Replace <FILL IN> with appropriate code
 
@@ -254,12 +254,12 @@ Test.assertEquals(movieNameWithAvgRatingsRDD.takeOrdered(3),
 # ratings from more than 500 people. We then use the `sortFunction()` helper function to sort by the
 # average rating to get the movies in order of their rating (highest rating first)
 movieLimitedAndSortedByRatingRDD = (movieNameWithAvgRatingsRDD
-                                    .<FILL IN>
+                                    .filter(lambda (x, y, z): z > 500)
                                     .sortBy(sortFunction, False))
 print 'Movies with highest ratings: %s' % movieLimitedAndSortedByRatingRDD.take(20)
 
 
-# In[ ]:
+# In[46]:
 
 # TEST Movies with Highest Average Ratings and more than 500 Reviews (1c)
 
@@ -314,7 +314,7 @@ Test.assertEquals(movieLimitedAndSortedByRatingRDD.take(20),
 # * #### A test set (RDD), which we will use for our experiments
 # #### To randomly split the dataset into the multiple groups, we can use the pySpark [randomSplit()](https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.randomSplit) transformation. `randomSplit()` takes a set of splits and and seed and returns multiple RDDs.
 
-# In[ ]:
+# In[47]:
 
 trainingRDD, validationRDD, testRDD = ratingsRDD.randomSplit([6, 2, 2], seed=0L)
 
@@ -358,10 +358,11 @@ assert testRDD.filter(lambda t: t == (1, 1035, 5.0)).count() == 1
 # * #### Using the total squared error and the number of pairs, compute the RSME. Make sure you compute this value as a [float](https://docs.python.org/2/library/stdtypes.html#numeric-types-int-float-long-complex).
 # #### Note: Your solution must only use transformations and actions on RDDs. Do _not_ call `collect()` on either RDD.
 
-# In[ ]:
+# In[48]:
 
 # TODO: Replace <FILL IN> with appropriate code
 import math
+import numpy as np
 
 def computeError(predictedRDD, actualRDD):
     """ Compute the root mean squared error between predicted and actual
@@ -373,24 +374,27 @@ def computeError(predictedRDD, actualRDD):
         RSME (float): computed RSME value
     """
     # Transform predictedRDD into the tuples of the form ((UserID, MovieID), Rating)
-    predictedReformattedRDD = predictedRDD.<FILL IN>
+    predictedReformattedRDD = predictedRDD.map(lambda (x, y, z): ((x, y), z))
 
     # Transform actualRDD into the tuples of the form ((UserID, MovieID), Rating)
-    actualReformattedRDD = actualRDD.<FILL IN>
+    actualReformattedRDD = actualRDD.map(lambda (x, y, z): ((x, y), z))
 
     # Compute the squared error for each matching entry (i.e., the same (User ID, Movie ID) in each
     # RDD) in the reformatted RDDs using RDD transformtions - do not use collect()
     squaredErrorsRDD = (predictedReformattedRDD
-                        .<FILL IN>)
+                        .join(actualReformattedRDD)
+                           .map(lambda (x, y): (x, (y[0] - y[1])**2)))
+    
+    print squaredErrorsRDD.take(3)
 
     # Compute the total squared error - do not use collect()
-    totalError = squaredErrorsRDD.<FILL IN>
-
+    totalError = squaredErrorsRDD.map(lambda (a, b): (1, b)).reduceByKey(lambda a, b : a + b)
+    
     # Count the number of entries for which you computed the total squared error
-    numRatings = squaredErrorsRDD.<FILL IN>
+    numRatings = squaredErrorsRDD.count()
 
     # Using the total squared error and the number of entries, compute the RSME
-    return <FILL IN>
+    return np.sqrt(np.divide(float(totalError.collect()[0][1]), numRatings))
 
 
 # sc.parallelize turns a Python list into a Spark RDD.
@@ -419,7 +423,7 @@ testError3 = computeError(testActual, testActual)
 print 'Error for testActual dataset (should be 0.0): %s' % testError3
 
 
-# In[ ]:
+# In[49]:
 
 # TEST Root Mean Square Error (2b)
 Test.assertTrue(abs(testError - 1.22474487139) < 0.00000001,
@@ -441,12 +445,12 @@ Test.assertTrue(abs(testError3 - 0.0) < 0.00000001,
 # ####  Which rank produces the best model, based on the RMSE with the `validationRDD` dataset?
 # #### Note: It is likely that this operation will take a noticeable amount of time (around a minute in our VM); you can observe its progress on the [Spark Web UI](http://localhost:4040). Probably most of the time will be spent running your `computeError()` function, since, unlike the Spark ALS implementation (and the Spark 1.4 [RegressionMetrics](https://spark.apache.org/docs/latest/api/python/pyspark.mllib.html#pyspark.mllib.evaluation.RegressionMetrics) module), this does not use a fast linear algebra library and needs to run some Python code for all 100k entries.
 
-# In[ ]:
+# In[53]:
 
 # TODO: Replace <FILL IN> with appropriate code
 from pyspark.mllib.recommendation import ALS
 
-validationForPredictRDD = validationRDD.<FILL IN>
+validationForPredictRDD = validationRDD.map(lambda (x, y, z): (x, y))
 
 seed = 5L
 iterations = 5
@@ -474,7 +478,7 @@ for rank in ranks:
 print 'The best model was trained with rank %s' % bestRank
 
 
-# In[ ]:
+# In[54]:
 
 # TEST Using ALS.train (2c)
 Test.assertEquals(trainingRDD.getNumPartitions(), 2,
@@ -497,19 +501,20 @@ Test.assertTrue(abs(errors[2] - 0.876832795659) < tolerance, 'incorrect errors[2
 # * #### For validation, use the `testRDD`and your `computeError` function to compute the RMSE between `testRDD` and the `predictedTestRDD` from the model.
 # * #### Evaluate the quality of the model by using the `computeError()` function you wrote in part (2b) to compute the error between the predicted ratings and the actual ratings in `testRDD`.
 
-# In[ ]:
+# In[55]:
 
 # TODO: Replace <FILL IN> with appropriate code
-myModel = <FILL IN>
-testForPredictingRDD = testRDD.<FILL IN>
-predictedTestRDD = myModel.<FILL IN>
+myModel =ALS.train(trainingRDD, bestRank, seed=seed, iterations=iterations,
+    lambda_=regularizationParameter)
+testForPredictingRDD = testRDD.map(lambda (x, y, z):(x, y))
+predictedTestRDD = myModel.predictAll(testForPredictingRDD)
 
 testRMSE = computeError(testRDD, predictedTestRDD)
 
 print 'The model had a RMSE on the test set of %s' % testRMSE
 
 
-# In[ ]:
+# In[56]:
 
 # TEST Testing Your Model (2d)
 Test.assertTrue(abs(testRMSE - 0.87809838344) < tolerance, 'incorrect testRMSE')
@@ -522,19 +527,21 @@ Test.assertTrue(abs(testRMSE - 0.87809838344) < tolerance, 'incorrect testRMSE')
 # * #### Use the average rating that you just determined and the `testRDD` to create an RDD with entries of the form (userID, movieID, average rating).
 # * #### Use your `computeError` function to compute the RMSE between the `testRDD` validation RDD that you just created and the `testForAvgRDD`.
 
-# In[ ]:
+# In[63]:
 
 # TODO: Replace <FILL IN> with appropriate code
+trainingAvgRating = trainingRDD.map(lambda (x, y, z): (1, z)).reduceByKey(lambda a, b : a + b)
 
-trainingAvgRating = trainingRDD.<FILL IN>
+trainingAvgRating =  float(trainingAvgRating.collect()[0][1])/trainingRDD.count()
+
 print 'The average rating for movies in the training set is %s' % trainingAvgRating
 
-testForAvgRDD = testRDD.<FILL IN>
+testForAvgRDD = testRDD.map(lambda (x, y, z) : (x, y, trainingAvgRating))
 testAvgRMSE = computeError(testRDD, testForAvgRDD)
 print 'The RMSE on the average set is %s' % testAvgRMSE
 
 
-# In[ ]:
+# In[64]:
 
 # TEST Comparing Your Model (2e)
 Test.assertTrue(abs(trainingAvgRating - 3.57409571052) < 0.000001,
