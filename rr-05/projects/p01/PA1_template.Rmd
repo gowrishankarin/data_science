@@ -1,0 +1,60 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+## Loading and preprocessing the data
+
+```{r}
+# Load required libraries
+library(data.table)
+library(dplyr)
+library(lubridate)
+library(plyr)
+library(reshape2)
+
+data <- read.table("activity.csv", header=T, sep=',', na.strings="NA", 
+                   stringsAsFactors = FALSE)
+# Convert the data to table data and remove from the memory
+new_data <- tbl_df(data)
+rm(data)
+
+
+# Mutate so that the format of Date and Time(POSIXct) column is no longer a string
+new_data <- mutate(new_data, date = as.Date(date, format="%Y-%m-%d"))
+print(new_data)
+```    
+
+## What is mean total number of steps taken per day?
+```{r}
+stepsPerDay <- ddply(
+    new_data, 
+    .(date), 
+    function(x) {  
+        sum(x$steps, na.rm = T)
+    }
+)
+
+plot(x = stepsPerDay$date, y = stepsPerDay$V1, type= "h")
+
+mean <- mean(stepsPerDay$V1)
+print(mean)
+median <- median(stepsPerDay$V1)
+print(median)
+
+
+```
+
+## What is the average daily activity pattern?
+
+
+
+## Imputing missing values
+
+
+
+## Are there differences in activity patterns between weekdays and weekends?
+
