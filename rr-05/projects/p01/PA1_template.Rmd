@@ -49,9 +49,22 @@ print(median)
 ```
 
 ## What is the average daily activity pattern?
+```{r}
 
+average <- ddply(
+    new_data, 
+    .(interval), 
+    function(x) {  
+        mean(x$steps, na.rm = T)
+    }
+)
 
+print(head(average))
+plot(x = average$interval, y = average$V1, type = "l")
 
+maxInterval <- average[which.max(average$V1),]
+print(maxInterval$interval)
+```
 ## Imputing missing values
 
 

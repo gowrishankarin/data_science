@@ -131,8 +131,42 @@ print(median)
 
 ## What is the average daily activity pattern?
 
+```r
+average <- ddply(
+    new_data, 
+    .(interval), 
+    function(x) {  
+        mean(x$steps, na.rm = T)
+    }
+)
 
+print(head(average))
+```
 
+```
+##   interval        V1
+## 1        0 1.7169811
+## 2        5 0.3396226
+## 3       10 0.1320755
+## 4       15 0.1509434
+## 5       20 0.0754717
+## 6       25 2.0943396
+```
+
+```r
+plot(x = average$interval, y = average$V1, type = "l")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
+```r
+maxInterval <- average[which.max(average$V1),]
+print(maxInterval$interval)
+```
+
+```
+## [1] 835
+```
 ## Imputing missing values
 
 
