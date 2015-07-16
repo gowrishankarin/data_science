@@ -30,13 +30,20 @@ print(new_data)
 
 ## What is mean total number of steps taken per day?
 ```{r}
-stepsPerDay <- ddply(
-    new_data, 
-    .(date), 
-    function(x) {  
-        sum(x$steps, na.rm = T)
-    }
-)
+
+calcStepsPerDay <- function(data) {
+    stepsPerDay <- ddply(
+        data, 
+        .(date), 
+        function(x) {  
+            sum(x$steps, na.rm = T)
+        }
+    )
+    
+    return(stepsPerDay)
+}
+
+stepsPerDay <- calcStepsPerDay(new_data)
 
 plot(x = stepsPerDay$date, y = stepsPerDay$V1, type= "h")
 
@@ -67,7 +74,37 @@ print(maxInterval$interval)
 ```
 ## Imputing missing values
 
+```{r}
+na_rows <- complete.cases(new_data)
+
+for(i in 1 : nrow(new_data)) {
+    if(na_rows[i] == FALSE) {
+        index <- match(new_data[i, "interval"], average$interval)
+        new_data[i, "steps"] <- average[index, "V1"]
+    } 
+}
+
+stepsPerDay <- calcStepsPerDay(new_data)
+
+plot(x = stepsPerDay$date, y = stepsPerDay$V1, type= "h")
+
+mean <- mean(stepsPerDay$V1)
+print(mean)
+median <- median(stepsPerDay$V1)
+print(median)
+
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r}
+x <- weekdays(new_data$date)
+
+print(x)
+
+
+
+```
+
 
