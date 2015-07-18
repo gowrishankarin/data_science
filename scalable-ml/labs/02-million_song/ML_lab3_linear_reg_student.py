@@ -72,7 +72,7 @@ import numpy as np
 # In this raw data point, 2001.0 is the label, and the remaining values are features
 
 
-# In[51]:
+# In[6]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def parsePoint(line):
@@ -99,7 +99,7 @@ d = len(firstPointFeatures)
 print d
 
 
-# In[52]:
+# In[7]:
 
 # TEST Using LabeledPoint (1b)
 Test.assertTrue(isinstance(firstPointLabel, float), 'label must be a float')
@@ -113,7 +113,7 @@ Test.assertTrue(d == 12, 'incorrect number of features')
 # #### **Visualization 1: Features**
 # #### First we will load and setup the visualization library.  Then we will look at the raw features for 50 data points by generating a heatmap that visualizes each feature on a grey-scale and shows the variation of each feature across the 50 sample data points.  The features are all between 0 and 1, with values closer to 1 represented via darker shades of grey.
 
-# In[53]:
+# In[8]:
 
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -155,7 +155,7 @@ pass
 # #### **(1c) Find the range **
 # #### Now let's examine the labels to find the range of song years.  To do this, first parse each element of the `rawData` RDD, and then find the smallest and largest labels.
 
-# In[71]:
+# In[9]:
 
 # TODO: Replace <FILL IN> with appropriate code
 parsedDataInit = rawData.map(parsePoint)
@@ -167,7 +167,7 @@ maxYear = max(onlyLabels.collect())
 print maxYear, minYear
 
 
-# In[72]:
+# In[10]:
 
 # TEST Find the range (1c)
 Test.assertEquals(len(parsedDataInit.take(1)[0].features), 12,
@@ -181,7 +181,7 @@ Test.assertTrue(yearRange == 89, 'incorrect range for minYear to maxYear')
 # #### **(1d) Shift labels **
 # #### As we just saw, the labels are years in the 1900s and 2000s.  In learning problems, it is often natural to shift labels such that they start from zero.  Starting with `parsedDataInit`, create a new RDD consisting of `LabeledPoint` objects in which the labels are shifted such that smallest label equals zero.
 
-# In[76]:
+# In[11]:
 
 # TODO: Replace <FILL IN> with appropriate code
 parsedData = parsedDataInit.map(lambda x: LabeledPoint(x.label - minYear, x.features))
@@ -192,7 +192,7 @@ print type(parsedData.take(1)[0])
 print '\n{0}'.format(parsedData.take(1))
 
 
-# In[77]:
+# In[12]:
 
 # TEST Shift labels (1d)
 oldSampleFeatures = parsedDataInit.take(1)[0].features
@@ -210,7 +210,7 @@ Test.assertTrue(maxYearNew == 89, 'incorrect max year in shifted data')
 # #### ** Visualization 2: Shifting labels **
 # #### We will look at the labels before and after shifting them.  Both scatter plots below visualize tuples storing i) a label value and ii) the number of training points with this label.  The first scatter plot uses the initial labels, while the second one uses the shifted labels.  Note that the two plots look the same except for the labels on the x-axis.
 
-# In[78]:
+# In[13]:
 
 # get data for plot
 oldData = (parsedDataInit
@@ -226,7 +226,7 @@ ax.set_xlabel('Year'), ax.set_ylabel('Count')
 pass
 
 
-# In[79]:
+# In[14]:
 
 # get data for plot
 newData = (parsedData
@@ -245,7 +245,7 @@ pass
 # #### ** (1e) Training, validation, and test sets **
 # #### We're almost done parsing our dataset, and our final task involves split it into training, validation and test sets. Use the [randomSplit method](https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.randomSplit) with the specified weights and seed to create RDDs storing each of these datasets. Next, cache each of these RDDs, as we will be accessing them multiple times in the remainder of this lab. Finally, compute the size of each dataset and verify that the sum of their sizes equals the value computed in Part (1a).
 
-# In[82]:
+# In[15]:
 
 # TODO: Replace <FILL IN> with appropriate code
 weights = [.8, .1, .1]
@@ -262,7 +262,7 @@ print nTrain, nVal, nTest, nTrain + nVal + nTest
 print parsedData.count()
 
 
-# In[83]:
+# In[16]:
 
 # TEST Training, validation, and test sets (1e)
 Test.assertEquals(parsedTrainData.getNumPartitions(), numPartitions,
@@ -296,15 +296,15 @@ Test.assertEquals(nTest, 671, 'unexpected value for nTest')
 # #### **(2a) Average label **
 # #### A very simple yet natural baseline model is one where we always make the same prediction independent of the given data point, using the average label in the training set as the constant prediction value.  Compute this value, which is the average (shifted) song year for the training set.  Use an appropriate method in the [RDD API](https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD).
 
-# In[ ]:
+# In[44]:
 
 # TODO: Replace <FILL IN> with appropriate code
 averageTrainYear = (parsedTrainData
-                    <FILL IN>)
+                    .map(lambda x: x.label).sum()/parsedTrainData.count())
 print averageTrainYear
 
 
-# In[ ]:
+# In[45]:
 
 # TEST Average label (2a)
 Test.assertTrue(np.allclose(averageTrainYear, 53.9316700801),
@@ -314,7 +314,7 @@ Test.assertTrue(np.allclose(averageTrainYear, 53.9316700801),
 # #### **(2b) Root mean squared error **
 # #### We naturally would like to see how well this naive baseline performs.  We will use root mean squared error ([RMSE](http://en.wikipedia.org/wiki/Root-mean-square_deviation)) for evaluation purposes.  Implement a function to compute RMSE given an RDD of (label, prediction) tuples, and test out this function on an example.
 
-# In[ ]:
+# In[46]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def squaredError(label, prediction):
@@ -327,7 +327,7 @@ def squaredError(label, prediction):
     Returns:
         float: The difference between the `label` and `prediction` squared.
     """
-    <FILL IN>
+    return np.square(label - prediction)
 
 def calcRMSE(labelsAndPreds):
     """Calculates the root mean squared error for an `RDD` of (label, prediction) tuples.
@@ -338,7 +338,9 @@ def calcRMSE(labelsAndPreds):
     Returns:
         float: The square root of the mean of the squared errors.
     """
-    <FILL IN>
+    squaredErrors = labelsAndPreds.map(lambda (x, y): squaredError(x, y))
+    rmse = np.sqrt(squaredErrors.sum()/squaredErrors.count())
+    return rmse
 
 labelsAndPreds = sc.parallelize([(3., 1.), (1., 2.), (2., 2.)])
 # RMSE = sqrt[((3-1)^2 + (1-2)^2 + (2-2)^2) / 3] = 1.291
@@ -346,7 +348,7 @@ exampleRMSE = calcRMSE(labelsAndPreds)
 print exampleRMSE
 
 
-# In[ ]:
+# In[47]:
 
 # TEST Root mean squared error (2b)
 Test.assertTrue(np.allclose(squaredError(3, 1), 4.), 'incorrect definition of squaredError')
@@ -356,24 +358,24 @@ Test.assertTrue(np.allclose(exampleRMSE, 1.29099444874), 'incorrect value for ex
 # #### **(2c) Training, validation and test RMSE **
 # #### Now let's calculate the training, validation and test RMSE of our baseline model. To do this, first create RDDs of (label, prediction) tuples for each dataset, and then call calcRMSE. Note that each RMSE can be interpreted as the average prediction error for the given dataset (in terms of number of years).
 
-# In[ ]:
+# In[53]:
 
 # TODO: Replace <FILL IN> with appropriate code
-labelsAndPredsTrain = parsedTrainData.<FILL IN>
-rmseTrainBase = <FILL IN>
+labelsAndPredsTrain = parsedTrainData.map(lambda x: (x.label, averageTrainYear))
+rmseTrainBase = calcRMSE(labelsAndPredsTrain)
 
-labelsAndPredsVal = parsedValData.<FILL IN>
-rmseValBase = <FILL IN>
+labelsAndPredsVal = parsedValData.map(lambda x: (x.label, averageTrainYear))
+rmseValBase = calcRMSE(labelsAndPredsVal)
 
-labelsAndPredsTest = parsedTestData.<FILL IN>
-rmseTestBase = <FILL IN>
+labelsAndPredsTest = parsedTestData.map(lambda x: (x.label, averageTrainYear))
+rmseTestBase = calcRMSE(labelsAndPredsTest)
 
 print 'Baseline Train RMSE = {0:.3f}'.format(rmseTrainBase)
 print 'Baseline Validation RMSE = {0:.3f}'.format(rmseValBase)
 print 'Baseline Test RMSE = {0:.3f}'.format(rmseTestBase)
 
 
-# In[ ]:
+# In[54]:
 
 # TEST Training, validation and test RMSE (2c)
 Test.assertTrue(np.allclose([rmseTrainBase, rmseValBase, rmseTestBase],
@@ -383,7 +385,7 @@ Test.assertTrue(np.allclose([rmseTrainBase, rmseValBase, rmseTestBase],
 # #### ** Visualization 3: Predicted vs. actual **
 # #### We will visualize predictions on the validation dataset. The scatter plots below visualize tuples storing i) the predicted value and ii) true label.  The first scatter plot represents the ideal situation where the predicted value exactly equals the true label, while the second plot uses the baseline predictor (i.e., `averageTrainYear`) for all predicted values.  Further note that the points in the scatter plots are color-coded, ranging from light yellow when the true and predicted values are equal to bright red when they drastically differ.
 
-# In[ ]:
+# In[55]:
 
 from matplotlib.colors import ListedColormap, Normalize
 from matplotlib.cm import get_cmap
@@ -405,7 +407,7 @@ ax.set_xlabel('Predicted'), ax.set_ylabel('Actual')
 pass
 
 
-# In[ ]:
+# In[56]:
 
 predictions = np.asarray(parsedValData
                          .map(lambda lp: averageTrainYear)
@@ -429,12 +431,12 @@ ax.set_xlabel('Predicted'), ax.set_ylabel('Actual')
 # #### Now let's see if we can do better via linear regression, training a model via gradient descent (we'll omit the intercept for now). Recall that the gradient descent update for linear regression is: $$ \scriptsize \mathbf{w}_{i+1} = \mathbf{w}_i - \alpha_i \sum_j (\mathbf{w}_i^\top\mathbf{x}_j  - y_j) \mathbf{x}_j \,.$$ where $ \scriptsize i $ is the iteration number of the gradient descent algorithm, and $ \scriptsize j $ identifies the observation.
 # #### First, implement a function that computes the summand for this update, i.e., the summand equals $ \scriptsize (\mathbf{w}^\top \mathbf{x} - y) \mathbf{x} \, ,$ and test out this function on two examples.  Use the `DenseVector` [dot](http://spark.apache.org/docs/latest/api/python/pyspark.mllib.html#pyspark.mllib.linalg.DenseVector.dot) method.
 
-# In[ ]:
+# In[57]:
 
 from pyspark.mllib.linalg import DenseVector
 
 
-# In[ ]:
+# In[91]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def gradientSummand(weights, lp):
@@ -451,7 +453,7 @@ def gradientSummand(weights, lp):
     Returns:
         DenseVector: An array of values the same length as `weights`.  The gradient summand.
     """
-    <FILL IN>
+    return ((np.dot(weights, lp.features) - lp.label) * lp.features)
 
 exampleW = DenseVector([1, 1, 1])
 exampleLP = LabeledPoint(2.0, [3, 1, 4])
@@ -465,7 +467,7 @@ summandTwo = gradientSummand(exampleW, exampleLP)
 print summandTwo
 
 
-# In[ ]:
+# In[92]:
 
 # TEST Gradient summand (3a)
 Test.assertTrue(np.allclose(summandOne, [18., 6., 24.]), 'incorrect value for summandOne')
@@ -475,7 +477,7 @@ Test.assertTrue(np.allclose(summandTwo, [1.7304,-5.1912,-2.5956]), 'incorrect va
 # #### ** (3b) Use weights to make predictions **
 # #### Next, implement a `getLabeledPredictions` function that takes in weights and an observation's `LabeledPoint` and returns a (label, prediction) tuple.  Note that we can predict by computing the dot product between weights and an observation's features.
 
-# In[ ]:
+# In[93]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def getLabeledPrediction(weights, observation):
@@ -493,7 +495,7 @@ def getLabeledPrediction(weights, observation):
     Returns:
         tuple: A (label, prediction) tuple.
     """
-    return <FILL IN>
+    return (observation.label, np.dot(weights, observation.features))
 
 weights = np.array([1.0, 1.5])
 predictionExample = sc.parallelize([LabeledPoint(2, np.array([1.0, .5])),
@@ -502,7 +504,7 @@ labelsAndPredsExample = predictionExample.map(lambda lp: getLabeledPrediction(we
 print labelsAndPredsExample.collect()
 
 
-# In[ ]:
+# In[94]:
 
 # TEST Use weights to make predictions (3b)
 Test.assertEquals(labelsAndPredsExample.collect(), [(2.0, 1.75), (1.5, 1.25)],
@@ -512,7 +514,7 @@ Test.assertEquals(labelsAndPredsExample.collect(), [(2.0, 1.75), (1.5, 1.25)],
 # #### ** (3c) Gradient descent **
 # #### Next, implement a gradient descent function for linear regression and test out this function on an example.
 
-# In[ ]:
+# In[156]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def linregGradientDescent(trainData, numIters):
@@ -543,16 +545,15 @@ def linregGradientDescent(trainData, numIters):
         # Use getLabeledPrediction from (3b) with trainData to obtain an RDD of (label, prediction)
         # tuples.  Note that the weights all equal 0 for the first iteration, so the predictions will
         # have large errors to start.
-        labelsAndPredsTrain = trainData.<FILL IN>
+        labelsAndPredsTrain = (trainData.map(lambda x: getLabeledPrediction(w, x)))
         errorTrain[i] = calcRMSE(labelsAndPredsTrain)
-
+        
         # Calculate the `gradient`.  Make use of the `gradientSummand` function you wrote in (3a).
         # Note that `gradient` sould be a `DenseVector` of length `d`.
-        gradient = <FILL IN>
-
+        gradient = trainData.map(lambda x: gradientSummand(w, x))
         # Update the weights
         alpha_i = alpha / (n * np.sqrt(i+1))
-        w -= <FILL IN>
+        w = w - (alpha_i * sum(gradient.collect()))
     return w, errorTrain
 
 # create a toy dataset with n = 10, d = 3, and then run 5 iterations of gradient descent
@@ -569,7 +570,7 @@ exampleWeights, exampleErrorTrain = linregGradientDescent(exampleData, exampleNu
 print exampleWeights
 
 
-# In[ ]:
+# In[157]:
 
 # TEST Gradient descent (3c)
 expectedOutput = [48.88110449,  36.01144093, 30.25350092]
@@ -583,20 +584,20 @@ Test.assertTrue(np.allclose(exampleErrorTrain, expectedError),
 # #### Now let's train a linear regression model on all of our training data and evaluate its accuracy on the validation set.  Note that the test set will not be used here.  If we evaluated the model on the test set, we would bias our final results.
 # #### We've already done much of the required work: we computed the number of features in Part (1b); we created the training and validation datasets and computed their sizes in Part (1e); and, we wrote a function to compute RMSE in Part (2b).
 
-# In[ ]:
+# In[161]:
 
 # TODO: Replace <FILL IN> with appropriate code
 numIters = 50
-weightsLR0, errorTrainLR0 = linregGradientDescent(<FILL IN>)
+weightsLR0, errorTrainLR0 = linregGradientDescent(parsedTrainData, numIters)
 
-labelsAndPreds = parsedValData.<FILL IN>
+labelsAndPreds = parsedValData.map(lambda x: getLabeledPrediction(weightsLR0, x))
 rmseValLR0 = calcRMSE(labelsAndPreds)
 
 print 'Validation RMSE:\n\tBaseline = {0:.3f}\n\tLR0 = {1:.3f}'.format(rmseValBase,
                                                                        rmseValLR0)
 
 
-# In[ ]:
+# In[162]:
 
 # TEST Train the model (3d)
 expectedOutput = [22.64535883, 20.064699, -0.05341901, 8.2931319, 5.79155768, -4.51008084,
@@ -607,7 +608,7 @@ Test.assertTrue(np.allclose(weightsLR0, expectedOutput), 'incorrect value for we
 # #### ** Visualization 4: Training error **
 # #### We will look at the log of the training error as a function of iteration. The first scatter plot visualizes the logarithm of the training error for all 50 iterations.  The second plot shows the training error itself, focusing on the final 44 iterations.
 
-# In[ ]:
+# In[163]:
 
 norm = Normalize()
 clrs = cmap(np.asarray(norm(np.log(errorTrainLR0))))[:,0:3]
@@ -619,7 +620,7 @@ ax.set_xlabel('Iteration'), ax.set_ylabel(r'$\log_e(errorTrainLR0)$')
 pass
 
 
-# In[ ]:
+# In[164]:
 
 norm = Normalize()
 clrs = cmap(np.asarray(norm(errorTrainLR0[6:])))[:,0:3]
