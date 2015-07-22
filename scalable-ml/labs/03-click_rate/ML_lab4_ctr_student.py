@@ -431,7 +431,7 @@ Test.assertEquals(nTest, 10014, 'incorrect value for nTest')
 # #### ** (3b) Extract features **
 # #### We will now parse the raw training data to create an RDD that we can subsequently use to create an OHE dictionary. Note from the `take()` command in Part (3a) that each raw data point is a string containing several fields separated by some delimiter.  For now, we will ignore the first field (which is the 0-1 label), and parse the remaining fields (or raw features).  To do this, complete the implemention of the `parsePoint` function.
 
-# In[84]:
+# In[26]:
 
 # TODO: Replace <FILL IN> with appropriate code
 from string import split
@@ -464,7 +464,7 @@ numCategories = (parsedTrainFeat
 print numCategories[2][1]
 
 
-# In[85]:
+# In[27]:
 
 # TEST Extract features (3b)
 Test.assertEquals(numCategories[2][1], 855, 'incorrect implementation of parsePoint')
@@ -474,7 +474,7 @@ Test.assertEquals(numCategories[32][1], 4, 'incorrect implementation of parsePoi
 # #### **(3c) Create an OHE dictionary from the dataset **
 # #### Note that parsePoint returns a data point as a list of `(featureID, category)` tuples, which is the same format as the sample dataset studied in Parts 1 and 2 of this lab.  Using this observation, create an OHE dictionary using the function implemented in Part (2c). Note that we will assume for simplicity that all features in our CTR dataset are categorical.
 
-# In[98]:
+# In[28]:
 
 # TODO: Replace <FILL IN> with appropriate code
 ctrOHEDict = createOneHotDict(parsedTrainFeat)
@@ -483,7 +483,7 @@ print numCtrOHEFeats
 print ctrOHEDict[(0, '')]
 
 
-# In[99]:
+# In[29]:
 
 # TEST Create an OHE dictionary from the dataset (3c)
 Test.assertEquals(numCtrOHEFeats, 233286, 'incorrect number of features in ctrOHEDict')
@@ -493,12 +493,12 @@ Test.assertTrue((0, '') in ctrOHEDict, 'incorrect features in ctrOHEDict')
 # #### ** (3d) Apply OHE to the dataset **
 # #### Now let's use this OHE dictionary by starting with the raw training data and creating an RDD of [LabeledPoint](http://spark.apache.org/docs/1.3.1/api/python/pyspark.mllib.html#pyspark.mllib.regression.LabeledPoint) objects using OHE features.  To do this, complete the implementation of the `parseOHEPoint` function. Hint: `parseOHEPoint` is an extension of the `parsePoint` function from Part (3b) and it uses the `oneHotEncoding` function from Part (1d).
 
-# In[101]:
+# In[30]:
 
 from pyspark.mllib.regression import LabeledPoint
 
 
-# In[106]:
+# In[43]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def parseOHEPoint(point, OHEDict, numOHEFeats):
@@ -518,11 +518,12 @@ def parseOHEPoint(point, OHEDict, numOHEFeats):
         LabeledPoint: Contains the label for the observation and the one-hot-encoding of the
             raw features based on the provided OHE dictionary.
     """
-    ohe = oneHotEncoding(point, OHEDict, numOHEFeats)
-    return LabeledPoint(int(point.split(',')[0]), ohe)
+    parsedPoint = parsePoint(point)
+    ohe = oneHotEncoding(parsedPoint, OHEDict, numOHEFeats)
+    return LabeledPoint(point.split(',')[0], ohe)
 
-ohe = parseOHEPoint(rawTrainData.take(1), ctrOHEDict, numCtrOHEFeats)
-
+#print rawTrainData.take(1)
+#ohe = parseOHEPoint(rawTrainData.take(1)[0], ctrOHEDict, numCtrOHEFeats)
 
 OHETrainData = rawTrainData.map(lambda point: parseOHEPoint(point, ctrOHEDict, numCtrOHEFeats))
 OHETrainData.cache()
@@ -537,7 +538,7 @@ except TypeError: withOneHot = True
 oneHotEncoding = backupOneHot
 
 
-# In[ ]:
+# In[44]:
 
 # TEST Apply OHE to the dataset (3d)
 numNZ = sum(parsedTrainFeat.map(lambda x: len(x)).take(5))
@@ -549,7 +550,7 @@ Test.assertTrue(withOneHot, 'oneHotEncoding not present in parseOHEPoint')
 # #### **Visualization 1: Feature frequency **
 # #### We will now visualize the number of times each of the 233,286 OHE features appears in the training data. We first compute the number of times each feature appears, then bucket the features by these counts.  The buckets are sized by powers of 2, so the first bucket corresponds to features that appear exactly once ( $ \scriptsize 2^0 $ ), the second to features that appear twice ( $ \scriptsize 2^1 $ ), the third to features that occur between three and four ( $ \scriptsize 2^2 $ ) times, the fifth bucket is five to eight ( $ \scriptsize 2^3 $ ) times and so on. The scatter plot below shows the logarithm of the bucket thresholds versus the logarithm of the number of features that have counts that fall in the buckets.
 
-# In[ ]:
+# In[45]:
 
 def bucketFeatByCount(featCount):
     """Bucket the counts by powers of two."""
@@ -571,7 +572,7 @@ featCountsBuckets = (featCounts
 print featCountsBuckets
 
 
-# In[ ]:
+# In[46]:
 
 import matplotlib.pyplot as plt
 
@@ -603,7 +604,7 @@ pass
 # #### **(3e) Handling unseen features **
 # #### We naturally would like to repeat the process from Part (3d), e.g., to compute OHE features for the validation and test datasets.  However, we must be careful, as some categorical values will likely appear in new data that did not exist in the training data. To deal with this situation, update the `oneHotEncoding()` function from Part (1d) to ignore previously unseen categories, and then compute OHE features for the validation data.
 
-# In[ ]:
+# In[47]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def oneHotEncoding(rawFeats, OHEDict, numOHEFeats):
@@ -625,14 +626,16 @@ def oneHotEncoding(rawFeats, OHEDict, numOHEFeats):
             identifiers for the (featureID, value) combinations that occur in the observation and
             with values equal to 1.0.
     """
-    <FILL IN>
+    return (SparseVector(numOHEFeats, 
+                sorted([OHEDict[feat] for feat in rawFeats if feat in OHEDict], key = int), 
+                [1 for feat in rawFeats if feat in OHEDict]))
 
 OHEValidationData = rawValidationData.map(lambda point: parseOHEPoint(point, ctrOHEDict, numCtrOHEFeats))
 OHEValidationData.cache()
 print OHEValidationData.take(1)
 
 
-# In[ ]:
+# In[48]:
 
 # TEST Handling unseen features (3e)
 numNZVal = (OHEValidationData
@@ -646,7 +649,7 @@ Test.assertEquals(numNZVal, 372080, 'incorrect number of features')
 # #### ** (4a) Logistic regression **
 # #### We are now ready to train our first CTR classifier.  A natural classifier to use in this setting is logistic regression, since it models the probability of a click-through event rather than returning a binary response, and when working with rare events, probabilistic predictions are useful.  First use [LogisticRegressionWithSGD](https://spark.apache.org/docs/latest/api/python/pyspark.mllib.html#pyspark.mllib.classification.LogisticRegressionWithSGD) to train a model using `OHETrainData` with the given hyperparameter configuration.  `LogisticRegressionWithSGD` returns a [LogisticRegressionModel](https://spark.apache.org/docs/latest/api/python/pyspark.mllib.html#pyspark.mllib.regression.LogisticRegressionModel).  Next, use the `LogisticRegressionModel.weights` and `LogisticRegressionModel.intercept` attributes to print out the model's parameters.  Note that these are the names of the object's attributes and should be called using a syntax like `model.weights` for a given `model`.
 
-# In[ ]:
+# In[49]:
 
 from pyspark.mllib.classification import LogisticRegressionWithSGD
 
@@ -658,15 +661,19 @@ regType = 'l2'
 includeIntercept = True
 
 
-# In[ ]:
+# In[64]:
 
 # TODO: Replace <FILL IN> with appropriate code
-model0 = <FILL IN>
+model0 = (LogisticRegressionWithSGD.train(
+            OHETrainData, iterations = 50, step = stepSize, regParam = regParam, 
+            regType = regType, intercept = includeIntercept))
+
+
 sortedWeights = sorted(model0.weights)
 print sortedWeights[:5], model0.intercept
 
 
-# In[ ]:
+# In[65]:
 
 # TEST Logistic regression (4a)
 Test.assertTrue(np.allclose(model0.intercept,  0.56455084025), 'incorrect value for model0.intercept')
@@ -678,7 +685,7 @@ Test.assertTrue(np.allclose(sortedWeights[0:5],
 # #### ** (4b) Log loss **
 # #### Throughout this lab, we will use log loss to evaluate the quality of models.  Log loss is defined as: $$  \begin{align} \scriptsize \ell_{log}(p, y) = \begin{cases} -\log (p) & \text{if } y = 1 \\\ -\log(1-p) & \text{if } y = 0 \end{cases} \end{align} $$ where $ \scriptsize p$ is a probability between 0 and 1 and $ \scriptsize y$ is a label of either 0 or 1. Log loss is a standard evaluation criterion when predicting rare-events such as click-through rate prediction (it is also the criterion used in the [Criteo Kaggle competition](https://www.kaggle.com/c/criteo-display-ad-challenge)).  Write a function to compute log loss, and evaluate it on some sample inputs.
 
-# In[ ]:
+# In[68]:
 
 # TODO: Replace <FILL IN> with appropriate code
 from math import log
@@ -698,7 +705,22 @@ def computeLogLoss(p, y):
         float: The log loss value.
     """
     epsilon = 10e-12
-    <FILL IN>
+    
+    if p == 0:
+        p = epsilon
+    
+    if p == 1:
+        p -= epsilon
+    
+    logloss = 0
+    if y == 1:
+        logloss = (-1 * log(p))
+    if y == 0:
+        logloss = (-1 * log(1-p))
+        
+   
+    return logloss
+        
 
 print computeLogLoss(.5, 1)
 print computeLogLoss(.5, 0)
@@ -711,7 +733,7 @@ print computeLogLoss(1, 1)
 print computeLogLoss(1, 0)
 
 
-# In[ ]:
+# In[69]:
 
 # TEST Log loss (4b)
 Test.assertTrue(np.allclose([computeLogLoss(.5, 1), computeLogLoss(.01, 0), computeLogLoss(.01, 1)],
@@ -725,19 +747,19 @@ Test.assertTrue(np.allclose([computeLogLoss(0, 1), computeLogLoss(1, 1), compute
 # #### ** (4c)  Baseline log loss **
 # #### Next we will use the function we wrote in Part (4b) to compute the baseline log loss on the training data. A very simple yet natural baseline model is one where we always make the same prediction independent of the given datapoint, setting the predicted value equal to the fraction of training points that correspond to click-through events (i.e., where the label is one). Compute this value (which is simply the mean of the training labels), and then use it to compute the training log loss for the baseline model.  The log loss for multiple observations is the mean of the individual log loss values.
 
-# In[ ]:
+# In[91]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # Note that our dataset has a very high click-through rate by design
 # In practice click-through rate can be one to two orders of magnitude lower
-classOneFracTrain = <FILL IN>
+classOneFracTrain = OHETrainData.map(lambda x: x.label).mean()
 print classOneFracTrain
 
-logLossTrBase = <FILL IN>
+logLossTrBase = OHETrainData.map(lambda x: computeLogLoss(classOneFracTrain, x.label)).mean()
 print 'Baseline Train Logloss = {0:.3f}\n'.format(logLossTrBase)
 
 
-# In[ ]:
+# In[92]:
 
 # TEST Baseline log loss (4c)
 Test.assertTrue(np.allclose(classOneFracTrain, 0.22717773523), 'incorrect value for classOneFracTrain')
