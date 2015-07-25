@@ -498,7 +498,7 @@ Test.assertTrue((0, '') in ctrOHEDict, 'incorrect features in ctrOHEDict')
 from pyspark.mllib.regression import LabeledPoint
 
 
-# In[43]:
+# In[31]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def parseOHEPoint(point, OHEDict, numOHEFeats):
@@ -538,7 +538,7 @@ except TypeError: withOneHot = True
 oneHotEncoding = backupOneHot
 
 
-# In[44]:
+# In[32]:
 
 # TEST Apply OHE to the dataset (3d)
 numNZ = sum(parsedTrainFeat.map(lambda x: len(x)).take(5))
@@ -550,7 +550,7 @@ Test.assertTrue(withOneHot, 'oneHotEncoding not present in parseOHEPoint')
 # #### **Visualization 1: Feature frequency **
 # #### We will now visualize the number of times each of the 233,286 OHE features appears in the training data. We first compute the number of times each feature appears, then bucket the features by these counts.  The buckets are sized by powers of 2, so the first bucket corresponds to features that appear exactly once ( $ \scriptsize 2^0 $ ), the second to features that appear twice ( $ \scriptsize 2^1 $ ), the third to features that occur between three and four ( $ \scriptsize 2^2 $ ) times, the fifth bucket is five to eight ( $ \scriptsize 2^3 $ ) times and so on. The scatter plot below shows the logarithm of the bucket thresholds versus the logarithm of the number of features that have counts that fall in the buckets.
 
-# In[45]:
+# In[33]:
 
 def bucketFeatByCount(featCount):
     """Bucket the counts by powers of two."""
@@ -572,7 +572,7 @@ featCountsBuckets = (featCounts
 print featCountsBuckets
 
 
-# In[46]:
+# In[34]:
 
 import matplotlib.pyplot as plt
 
@@ -604,7 +604,7 @@ pass
 # #### **(3e) Handling unseen features **
 # #### We naturally would like to repeat the process from Part (3d), e.g., to compute OHE features for the validation and test datasets.  However, we must be careful, as some categorical values will likely appear in new data that did not exist in the training data. To deal with this situation, update the `oneHotEncoding()` function from Part (1d) to ignore previously unseen categories, and then compute OHE features for the validation data.
 
-# In[47]:
+# In[35]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def oneHotEncoding(rawFeats, OHEDict, numOHEFeats):
@@ -635,7 +635,7 @@ OHEValidationData.cache()
 print OHEValidationData.take(1)
 
 
-# In[48]:
+# In[36]:
 
 # TEST Handling unseen features (3e)
 numNZVal = (OHEValidationData
@@ -649,7 +649,7 @@ Test.assertEquals(numNZVal, 372080, 'incorrect number of features')
 # #### ** (4a) Logistic regression **
 # #### We are now ready to train our first CTR classifier.  A natural classifier to use in this setting is logistic regression, since it models the probability of a click-through event rather than returning a binary response, and when working with rare events, probabilistic predictions are useful.  First use [LogisticRegressionWithSGD](https://spark.apache.org/docs/latest/api/python/pyspark.mllib.html#pyspark.mllib.classification.LogisticRegressionWithSGD) to train a model using `OHETrainData` with the given hyperparameter configuration.  `LogisticRegressionWithSGD` returns a [LogisticRegressionModel](https://spark.apache.org/docs/latest/api/python/pyspark.mllib.html#pyspark.mllib.regression.LogisticRegressionModel).  Next, use the `LogisticRegressionModel.weights` and `LogisticRegressionModel.intercept` attributes to print out the model's parameters.  Note that these are the names of the object's attributes and should be called using a syntax like `model.weights` for a given `model`.
 
-# In[49]:
+# In[37]:
 
 from pyspark.mllib.classification import LogisticRegressionWithSGD
 
@@ -661,7 +661,7 @@ regType = 'l2'
 includeIntercept = True
 
 
-# In[64]:
+# In[38]:
 
 # TODO: Replace <FILL IN> with appropriate code
 model0 = (LogisticRegressionWithSGD.train(
@@ -673,7 +673,7 @@ sortedWeights = sorted(model0.weights)
 print sortedWeights[:5], model0.intercept
 
 
-# In[65]:
+# In[39]:
 
 # TEST Logistic regression (4a)
 Test.assertTrue(np.allclose(model0.intercept,  0.56455084025), 'incorrect value for model0.intercept')
@@ -685,7 +685,7 @@ Test.assertTrue(np.allclose(sortedWeights[0:5],
 # #### ** (4b) Log loss **
 # #### Throughout this lab, we will use log loss to evaluate the quality of models.  Log loss is defined as: $$  \begin{align} \scriptsize \ell_{log}(p, y) = \begin{cases} -\log (p) & \text{if } y = 1 \\\ -\log(1-p) & \text{if } y = 0 \end{cases} \end{align} $$ where $ \scriptsize p$ is a probability between 0 and 1 and $ \scriptsize y$ is a label of either 0 or 1. Log loss is a standard evaluation criterion when predicting rare-events such as click-through rate prediction (it is also the criterion used in the [Criteo Kaggle competition](https://www.kaggle.com/c/criteo-display-ad-challenge)).  Write a function to compute log loss, and evaluate it on some sample inputs.
 
-# In[68]:
+# In[40]:
 
 # TODO: Replace <FILL IN> with appropriate code
 from math import log
@@ -733,7 +733,7 @@ print computeLogLoss(1, 1)
 print computeLogLoss(1, 0)
 
 
-# In[69]:
+# In[41]:
 
 # TEST Log loss (4b)
 Test.assertTrue(np.allclose([computeLogLoss(.5, 1), computeLogLoss(.01, 0), computeLogLoss(.01, 1)],
@@ -747,7 +747,7 @@ Test.assertTrue(np.allclose([computeLogLoss(0, 1), computeLogLoss(1, 1), compute
 # #### ** (4c)  Baseline log loss **
 # #### Next we will use the function we wrote in Part (4b) to compute the baseline log loss on the training data. A very simple yet natural baseline model is one where we always make the same prediction independent of the given datapoint, setting the predicted value equal to the fraction of training points that correspond to click-through events (i.e., where the label is one). Compute this value (which is simply the mean of the training labels), and then use it to compute the training log loss for the baseline model.  The log loss for multiple observations is the mean of the individual log loss values.
 
-# In[91]:
+# In[43]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # Note that our dataset has a very high click-through rate by design
@@ -759,7 +759,7 @@ logLossTrBase = OHETrainData.map(lambda x: computeLogLoss(classOneFracTrain, x.l
 print 'Baseline Train Logloss = {0:.3f}\n'.format(logLossTrBase)
 
 
-# In[92]:
+# In[44]:
 
 # TEST Baseline log loss (4c)
 Test.assertTrue(np.allclose(classOneFracTrain, 0.22717773523), 'incorrect value for classOneFracTrain')
@@ -770,7 +770,7 @@ Test.assertTrue(np.allclose(logLossTrBase, 0.535844), 'incorrect value for logLo
 # #### In order to compute the log loss for the model we trained in Part (4a), we need to write code to generate predictions from this model. Write a function that computes the raw linear prediction from this logistic regression model and then passes it through a [sigmoid function](http://en.wikipedia.org/wiki/Sigmoid_function) $ \scriptsize \sigma(t) = (1+ e^{-t})^{-1} $ to return the model's probabilistic prediction. Then compute probabilistic predictions on the training data.
 # #### Note that when incorporating an intercept into our predictions, we simply add the intercept to the value of the prediction obtained from the weights and features.  Alternatively, if the intercept was included as the first weight, we would need to add a corresponding feature to our data where the feature has the value one.  This is not the case here.
 
-# In[ ]:
+# In[58]:
 
 # TODO: Replace <FILL IN> with appropriate code
 from math import exp #  exp(-t) = e^-t
@@ -790,19 +790,20 @@ def getP(x, w, intercept):
     Returns:
         float: A probability between 0 and 1.
     """
-    rawPrediction = <FILL IN>
-
+    rawPrediction = w.dot(x) + intercept
+    
     # Bound the raw prediction value
     rawPrediction = min(rawPrediction, 20)
     rawPrediction = max(rawPrediction, -20)
-    return <FILL IN>
+    return 1/(1 + exp(-rawPrediction))
 
-trainingPredictions = <FILL IN>
+
+trainingPredictions = OHETrainData.map(lambda x: getP(x.features, model0.weights, model0.intercept))
 
 print trainingPredictions.take(5)
 
 
-# In[ ]:
+# In[59]:
 
 # TEST Predicted probability (4d)
 Test.assertTrue(np.allclose(trainingPredictions.sum(), 18135.4834348),
@@ -812,7 +813,7 @@ Test.assertTrue(np.allclose(trainingPredictions.sum(), 18135.4834348),
 # #### ** (4e) Evaluate the model **
 # #### We are now ready to evaluate the quality of the model we trained in Part (4a). To do this, first write a general function that takes as input a model and data, and outputs the log loss.  Then run this function on the OHE training data, and compare the result with the baseline log loss.
 
-# In[ ]:
+# In[71]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def evaluateResults(model, data):
@@ -825,14 +826,15 @@ def evaluateResults(model, data):
     Returns:
         float: Log loss for the data.
     """
-    <FILL IN>
+    predictedModel = data.map(lambda x: (x.label, getP(x.features, model0.weights, model0.intercept)))
+    logloss = predictedModel.map(lambda x: computeLogLoss(x[1], x[0])).mean()
+    return logloss
 
 logLossTrLR0 = evaluateResults(model0, OHETrainData)
-print ('OHE Features Train Logloss:\n\tBaseline = {0:.3f}\n\tLogReg = {1:.3f}'
-       .format(logLossTrBase, logLossTrLR0))
+print ('OHE Features Train Logloss:\n\tBaseline = {0:.3f}\n\tLogReg = {1:.3f}'.format(logLossTrBase, logLossTrLR0))
 
 
-# In[ ]:
+# In[72]:
 
 # TEST Evaluate the model (4e)
 Test.assertTrue(np.allclose(logLossTrLR0, 0.456903), 'incorrect value for logLossTrLR0')
@@ -841,17 +843,17 @@ Test.assertTrue(np.allclose(logLossTrLR0, 0.456903), 'incorrect value for logLos
 # #### ** (4f) Validation log loss **
 # #### Next, following the same logic as in Parts (4c) and 4(e), compute the validation log loss for both the baseline and logistic regression models. Notably, the baseline model for the validation data should still be based on the label fraction from the training dataset.
 
-# In[ ]:
+# In[74]:
 
 # TODO: Replace <FILL IN> with appropriate code
-logLossValBase = <FILL IN>
+logLossValBase = OHEValidationData.map(lambda x: computeLogLoss(classOneFracTrain, x.label)).mean()
 
-logLossValLR0 = <FILL IN>
+logLossValLR0 = evaluateResults(model0, OHEValidationData)
 print ('OHE Features Validation Logloss:\n\tBaseline = {0:.3f}\n\tLogReg = {1:.3f}'
        .format(logLossValBase, logLossValLR0))
 
 
-# In[ ]:
+# In[75]:
 
 # TEST Validation log loss (4f)
 Test.assertTrue(np.allclose(logLossValBase, 0.527603), 'incorrect value for logLossValBase')
@@ -861,7 +863,7 @@ Test.assertTrue(np.allclose(logLossValLR0, 0.456957), 'incorrect value for logLo
 # #### **Visualization 2: ROC curve **
 # #### We will now visualize how well the model predicts our target.  To do this we generate a plot of the ROC curve.  The ROC curve shows us the trade-off between the false positive rate and true positive rate, as we liberalize the threshold required to predict a positive outcome.  A random model is represented by the dashed line.
 
-# In[ ]:
+# In[76]:
 
 labelsAndScores = OHEValidationData.map(lambda lp:
                                             (lp.label, getP(lp.features, model0.weights, model0.intercept)))
