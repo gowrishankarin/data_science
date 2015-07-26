@@ -895,7 +895,7 @@ pass
 # #### As we just saw, using a one-hot-encoding featurization can yield a model with good statistical accuracy.  However, the number of distinct categories across all features is quite large -- recall that we observed 233K categories in the training data in Part (3c).  Moreover, the full Kaggle training dataset includes more than 33M distinct categories, and the Kaggle dataset itself is just a small subset of Criteo's labeled data.  Hence, featurizing via a one-hot-encoding representation would lead to a very large feature vector. To reduce the dimensionality of the feature space, we will use feature hashing.
 # ####Below is the hash function that we will use for this part of the lab.  We will first use this hash function with the three sample data points from Part (1a) to gain some intuition.  Specifically, run code to hash the three sample points using two different values for `numBuckets` and observe the resulting hashed feature dictionaries.
 
-# In[ ]:
+# In[77]:
 
 from collections import defaultdict
 import hashlib
@@ -934,18 +934,18 @@ def hashFunction(numBuckets, rawFeats, printMapping=False):
 # sampleThree =  [(0, 'bear'), (1, 'black'), (2, 'salmon')]
 
 
-# In[ ]:
+# In[78]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # Use four buckets
-sampOneFourBuckets = hashFunction(<FILL IN>, sampleOne, True)
-sampTwoFourBuckets = hashFunction(<FILL IN>, sampleTwo, True)
-sampThreeFourBuckets = hashFunction(<FILL IN>, sampleThree, True)
+sampOneFourBuckets = hashFunction(4, sampleOne, True)
+sampTwoFourBuckets = hashFunction(4, sampleTwo, True)
+sampThreeFourBuckets = hashFunction(4, sampleThree, True)
 
 # Use one hundred buckets
-sampOneHundredBuckets = hashFunction(<FILL IN>, sampleOne, True)
-sampTwoHundredBuckets = hashFunction(<FILL IN>, sampleTwo, True)
-sampThreeHundredBuckets = hashFunction(<FILL IN>, sampleThree, True)
+sampOneHundredBuckets = hashFunction(100, sampleOne, True)
+sampTwoHundredBuckets = hashFunction(100, sampleTwo, True)
+sampThreeHundredBuckets = hashFunction(100, sampleThree, True)
 
 print '\t\t 4 Buckets \t\t\t 100 Buckets'
 print 'SampleOne:\t {0}\t\t {1}'.format(sampOneFourBuckets, sampOneHundredBuckets)
@@ -953,7 +953,7 @@ print 'SampleTwo:\t {0}\t\t {1}'.format(sampTwoFourBuckets, sampTwoHundredBucket
 print 'SampleThree:\t {0}\t {1}'.format(sampThreeFourBuckets, sampThreeHundredBuckets)
 
 
-# In[ ]:
+# In[79]:
 
 # TEST Hash function (5a)
 Test.assertEquals(sampOneFourBuckets, {2: 1.0, 3: 1.0}, 'incorrect value for sampOneFourBuckets')
@@ -964,7 +964,7 @@ Test.assertEquals(sampThreeHundredBuckets, {72: 1.0, 5: 1.0, 14: 1.0},
 # #### ** (5b) Creating hashed features **
 # #### Next we will use this hash function to create hashed features for our CTR datasets. First write a function that uses the hash function from Part (5a) with numBuckets = $ \scriptsize 2^{15} \approx 33K $ to create a `LabeledPoint` with hashed features stored as a `SparseVector`.  Then use this function to create new training, validation and test datasets with hashed features. Hint: `parsedHashPoint` is similar to `parseOHEPoint` from Part (3d).
 
-# In[ ]:
+# In[175]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def parseHashPoint(point, numBuckets):
@@ -979,20 +979,24 @@ def parseHashPoint(point, numBuckets):
         LabeledPoint: A LabeledPoint with a label (0.0 or 1.0) and a SparseVector of hashed
             features.
     """
-    <FILL IN>
+    splits = point.split(',')[0]
+    label = splits[0]
+    rawFeatures = parsePoint(point)
+    hashed = hashFunction(numBuckets, rawFeatures)
+    return LabeledPoint(int(label), SparseVector(len(hashed.keys()), hashed))
 
 numBucketsCTR = 2 ** 15
-hashTrainData = <FILL IN>
+hashTrainData = rawTrainData.map(lambda x: parseHashPoint(x, numBucketsCTR))
 hashTrainData.cache()
-hashValidationData = <FILL IN>
+hashValidationData = rawValidationData.map(lambda x: parseHashPoint(x, numBucketsCTR))
 hashValidationData.cache()
-hashTestData = <FILL IN>
+hashTestData = rawTestData.map(lambda x: parseHashPoint(x, numBucketsCTR))
 hashTestData.cache()
 
 print hashTrainData.take(1)
 
 
-# In[ ]:
+# In[176]:
 
 # TEST Creating hashed features (5b)
 hashTrainDataFeatureSum = sum(hashTrainData
@@ -1027,7 +1031,7 @@ Test.assertEquals(hashTestDataLabelSum, 23.0, 'incorrect labels in hashTestData'
 # #### Since we have 33K hashed features versus 233K OHE features, we should expect OHE features to be sparser. Verify this hypothesis by computing the average sparsity of the OHE and the hashed training datasets.
 # #### Note that if you have a `SparseVector` named `sparse`, calling `len(sparse)` returns the total number of features, not the number features with entries.  `SparseVector` objects have the attributes `indices` and `values` that contain information about which features are nonzero.  Continuing with our example, these can be accessed using `sparse.indices` and `sparse.values`, respectively.
 
-# In[ ]:
+# In[178]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def computeSparsity(data, d, n):
@@ -1041,7 +1045,7 @@ def computeSparsity(data, d, n):
     Returns:
         float: The average of the ratio of features in a point to total features.
     """
-    <FILL IN>
+    return data.map(lambda x: len(x.features.values)).sum()/float(d)/float(n)
 
 averageSparsityHash = computeSparsity(hashTrainData, numBucketsCTR, nTrain)
 averageSparsityOHE = computeSparsity(OHETrainData, numCtrOHEFeats, nTrain)
@@ -1050,7 +1054,7 @@ print 'Average OHE Sparsity: {0:.7e}'.format(averageSparsityOHE)
 print 'Average Hash Sparsity: {0:.7e}'.format(averageSparsityHash)
 
 
-# In[ ]:
+# In[179]:
 
 # TEST Sparsity (5c)
 Test.assertTrue(np.allclose(averageSparsityOHE, 1.6717677e-04),
@@ -1062,7 +1066,7 @@ Test.assertTrue(np.allclose(averageSparsityHash, 1.1805561e-03),
 # #### ** (5d) Logistic model with hashed features **
 # #### Now let's train a logistic regression model using the hashed features. Run a grid search to find suitable hyperparameters for the hashed features, evaluating via log loss on the validation data. Note: This may take a few minutes to run. Use `1` and `10` for `stepSizes` and `1e-6` and `1e-3` for `regParams`.
 
-# In[ ]:
+# In[180]:
 
 numIters = 500
 regType = 'l2'
@@ -1073,11 +1077,11 @@ bestModel = None
 bestLogLoss = 1e10
 
 
-# In[ ]:
+# In[181]:
 
 # TODO: Replace <FILL IN> with appropriate code
-stepSizes = <FILL IN>
-regParams = <FILL IN>
+stepSizes = [1, 10]
+regParams = [1e-6, 1e-3]
 for stepSize in stepSizes:
     for regParam in regParams:
         model = (LogisticRegressionWithSGD
@@ -1140,10 +1144,10 @@ pass
 
 # TODO: Replace <FILL IN> with appropriate code
 # Log loss for the best model from (5d)
-logLossTest = <FILL IN>
+logLossTest = evaluateResults(model, hashValidationData)
 
 # Log loss for the baseline model
-logLossTestBaseline = <FILL IN>
+logLossTestBaseline = evaluateResults(model, hashTestData)
 
 print ('Hashed Features Test Log Loss:\n\tBaseline = {0:.3f}\n\tLogReg = {1:.3f}'
        .format(logLossTestBaseline, logLossTest))
