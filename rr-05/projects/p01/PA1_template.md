@@ -3,75 +3,8 @@
 
 ## Q1 Loading and preprocessing the data
 
-```r
-# Load required libraries
-library(data.table)
-library(dplyr)
-```
 
-```
-## 
-## Attaching package: 'dplyr'
-## 
-## The following objects are masked from 'package:data.table':
-## 
-##     between, last
-## 
-## The following object is masked from 'package:stats':
-## 
-##     filter
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
 
-```r
-library(lubridate)
-```
-
-```
-## 
-## Attaching package: 'lubridate'
-## 
-## The following objects are masked from 'package:data.table':
-## 
-##     hour, mday, month, quarter, wday, week, yday, year
-```
-
-```r
-library(plyr)
-```
-
-```
-## -------------------------------------------------------------------------
-## You have loaded plyr after dplyr - this is likely to cause problems.
-## If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
-## library(plyr); library(dplyr)
-## -------------------------------------------------------------------------
-## 
-## Attaching package: 'plyr'
-## 
-## The following object is masked from 'package:lubridate':
-## 
-##     here
-## 
-## The following objects are masked from 'package:dplyr':
-## 
-##     arrange, count, desc, failwith, id, mutate, rename, summarise,
-##     summarize
-```
-
-```r
-library(reshape2)
-library(ggplot2)
-library(ggExtra)
-library(gtable)
-```
-
-```
-## Loading required package: grid
-```
 
 ```r
 data <- read.table("activity.csv", header=T, sep=',', na.strings="NA", 
@@ -103,7 +36,7 @@ plot(x = stepsPerDay$date, y = stepsPerDay$V1, type= "h", main = "Q2 Total No of
      xlab = "Days", ylab = "Steps(total)")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
 
 ```r
 mean <- mean(stepsPerDay$V1)
@@ -127,7 +60,7 @@ plot(x = average$interval, y = average$V1, type = "l", main = "Q4 Average No. Of
      xlab = "5 Mins Interval", ylab = "Steps(Average)")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
 
 ```r
 maxInterval <- average[which.max(average$V1),]
@@ -162,7 +95,7 @@ stepsPerDay <- calcStepsPerDay(new_data)
 plot(x = stepsPerDay$date, y = stepsPerDay$V1, type= "h", main = "Q7 Total No of Steps Taken Each Day After Imputing", xlab = "Days", ylab = "Steps(total)")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
 
 ```r
 mean <- mean(stepsPerDay$V1)
@@ -206,6 +139,6 @@ grid.newpage()
 grid.draw(g) 
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
 
 
