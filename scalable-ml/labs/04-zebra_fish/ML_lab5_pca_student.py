@@ -24,7 +24,7 @@
 #  
 # #### Note that, for reference, you can look up the details of the relevant Spark methods in [Spark's Python API](https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD) and the relevant NumPy methods in the [NumPy Reference](http://docs.scipy.org/doc/numpy/reference/index.html)
 
-# In[1]:
+# In[2]:
 
 labVersion = 'cs190_week5_v_1_2'
 
@@ -37,7 +37,7 @@ labVersion = 'cs190_week5_v_1_2'
 #  
 # #### In our visualizations below, we will specify the mean of each dimension to be 50 and the variance along each dimension to be 1.  We will explore two different values for the covariance: 0 and 0.9. When the covariance is zero, the two dimensions are uncorrelated, and hence the data looks spherical.  In contrast, when the covariance is 0.9, the two dimensions are strongly (positively) correlated and thus the data is non-spherical.  As we'll see in Parts 1 and 2, the non-spherical data is amenable to dimensionality reduction via PCA, while the spherical data is not.
 
-# In[2]:
+# In[3]:
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -63,7 +63,7 @@ def create2DGaussian(mn, sigma, cov, n):
     return np.random.multivariate_normal(np.array([mn, mn]), np.array([[sigma, cov], [cov, sigma]]), n)
 
 
-# In[3]:
+# In[4]:
 
 dataRandom = create2DGaussian(mn=50, sigma=1, cov=0, n=100)
 
@@ -75,7 +75,7 @@ plt.scatter(dataRandom[:,0], dataRandom[:,1], s=14**2, c='#d6ebf2', edgecolors='
 pass
 
 
-# In[4]:
+# In[5]:
 
 dataCorrelated = create2DGaussian(mn=50, sigma=1, cov=0.9, n=100)
 
@@ -92,7 +92,7 @@ pass
 # #### PCA can be interpreted as identifying the "directions" along which the data vary the most. In the first step of PCA, we must first center our data.  Working with our correlated dataset, first compute the mean of each feature (column) in the dataset.  Then for each observation, modify the features by subtracting their corresponding mean, to create a zero mean dataset.
 # #### Note that `correlatedData` is an RDD of NumPy arrays.  This allows us to perform certain operations more succinctly.  For example, we can sum the columns of our dataset using `correlatedData.sum()`.
 
-# In[5]:
+# In[6]:
 
 # TODO: Replace <FILL IN> with appropriate code
 correlatedData = sc.parallelize(dataCorrelated)
@@ -105,7 +105,7 @@ print correlatedData.take(1)
 print correlatedDataZeroMean.take(1)
 
 
-# In[6]:
+# In[7]:
 
 # TEST Interpreting PCA (1a)
 from test_helper import Test
@@ -120,7 +120,7 @@ Test.assertTrue(np.allclose(correlatedDataZeroMean.take(1)[0], [-0.28561917, 0.1
 #  
 # #### Note that [np.outer()](http://docs.scipy.org/doc/numpy/reference/generated/numpy.outer.html) can be used to calculate the outer product of two NumPy arrays.
 
-# In[7]:
+# In[8]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # Compute the covariance matrix using outer products and correlatedDataZeroMean
@@ -128,7 +128,7 @@ correlatedCov = correlatedDataZeroMean.map(lambda x: (np.outer(x, x))).sum()/flo
 print correlatedCov
 
 
-# In[8]:
+# In[9]:
 
 # TEST Sample covariance matrix (1b)
 covResult = [[ 0.99558386,  0.90148989], [0.90148989, 1.08607497]]
@@ -138,7 +138,7 @@ Test.assertTrue(np.allclose(covResult, correlatedCov), 'incorrect value for corr
 # #### **(1c) Covariance Function**
 # #### Next, use the expressions above to write a function to compute the sample covariance matrix for an arbitrary `data` RDD.
 
-# In[9]:
+# In[10]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def estimateCovariance(data):
@@ -163,7 +163,7 @@ correlatedCovAuto= estimateCovariance(correlatedData)
 print correlatedCovAuto
 
 
-# In[10]:
+# In[11]:
 
 # TEST Covariance function (1c)
 correctCov = [[ 0.99558386,  0.90148989], [0.90148989, 1.08607497]]
@@ -177,7 +177,7 @@ Test.assertTrue(np.allclose(correctCov, correlatedCovAuto),
 # #### Use a function from `numpy.linalg` called [eigh](http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.eigh.html) to perform the eigendecomposition.  Next, sort the eigenvectors based on their corresponding eigenvalues (from high to low), yielding a matrix where the columns are the eigenvectors (and the first column is the top eigenvector).  Note that [np.argsort](http://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy-argsort) can be used to obtain the indices of the eigenvalues that correspond to the ascending order of eigenvalues.  Finally, set the `topComponent` variable equal to the top eigenvector or prinicipal component, which is a $\scriptsize 2 $-dimensional vector (array with two values).
 # #### Note that the eigenvectors returned by `eigh` appear in the columns and not the rows.  For example, the first eigenvector of `eigVecs` would be found in the first column and could be accessed using `eigVecs[:,0]`.
 
-# In[39]:
+# In[30]:
 
 # TODO: Replace <FILL IN> with appropriate code
 from numpy.linalg import eigh
@@ -193,7 +193,7 @@ topComponent = eigVecs[:,inds[0]]
 print '\ntop principal component: {0}'.format(topComponent)
 
 
-# In[40]:
+# In[31]:
 
 # TEST Eigendecomposition (1d)
 def checkBasis(vectors, correct):
@@ -205,7 +205,7 @@ Test.assertTrue(checkBasis(topComponent, [0.68915649, 0.72461254]),
 # #### **(1e) PCA scores**
 # #### We just computed the top principal component for a 2-dimensional non-spherical dataset.  Now let's use this principal component to derive a one-dimensional representation for the original data. To compute these compact representations, which are sometimes called PCA "scores", calculate the dot product between each data point in the raw data and the top principal component.
 
-# In[41]:
+# In[32]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # Use the topComponent and the data from correlatedData to generate PCA scores
@@ -213,7 +213,7 @@ correlatedDataScores = correlatedData.map(lambda x: x.dot(topComponent))
 print 'one-dimensional data (first three):\n{0}'.format(np.asarray(correlatedDataScores.take(3)))
 
 
-# In[42]:
+# In[33]:
 
 # TEST PCA Scores (1e)
 firstThree = [70.51682806, 69.30622356, 71.13588168]
@@ -228,7 +228,7 @@ Test.assertTrue(checkBasis(correlatedDataScores.take(3), firstThree),
 #  
 # ####Note: As discussed in lecture, our implementation is a reasonable strategy when $\scriptsize d $ is small, though more efficient distributed algorithms exist when $\scriptsize d $ is large.
 
-# In[ ]:
+# In[156]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def pca(data, k=2):
@@ -249,12 +249,22 @@ def pca(data, k=2):
             `k`.  The `RDD` of scores has the same number of rows as `data` and consists of arrays
             of length `k`.  Eigenvalues is an array of length d (the number of features).
     """
-    <FILL IN>
+    corrCovAuto= estimateCovariance(data)
+    eigValsNew, eigVecsNew = eigh(corrCovAuto)
+    indsNew = np.argsort(eigValsNew)[::-1]
+
+    
+    topKComponents = eigVecsNew[:,indsNew[:k]]
+    print topKComponents
+    
+    print data.take(1)
+    corrDataScores = data.map(lambda x: np.dot(x, topKComponents))
+
     # Return the `k` principal components, `k` scores, and all eigenvalues
-    <FILL IN>
+    return topKComponents, corrDataScores, eigValsNew[::-1]
 
 # Run pca on correlatedData with k = 2
-topComponentsCorrelated, correlatedDataScoresAuto, eigenvaluesCorrelated = <FILL IN>
+topComponentsCorrelated, correlatedDataScoresAuto, eigenvaluesCorrelated = pca(correlatedData, 2)
 
 # Note that the 1st principal component is in the first column
 print 'topComponentsCorrelated: \n{0}'.format(topComponentsCorrelated)
@@ -264,7 +274,9 @@ print '\neigenvaluesCorrelated: \n{0}'.format(eigenvaluesCorrelated)
 
 # Create a higher dimensional test set
 pcaTestData = sc.parallelize([np.arange(x, x + 4) for x in np.arange(0, 20, 4)])
-componentsTest, testScores, eigenvaluesTest = pca(pcaTestData, 3)
+print "Hi"
+print pcaTestData.collect()
+componentsTest, testScores, eigenvaluesTest = pca(pcaTestData, k=3)
 
 print '\npcaTestData: \n{0}'.format(np.array(pcaTestData.collect()))
 print '\ncomponentsTest: \n{0}'.format(componentsTest)
@@ -273,7 +285,7 @@ print ('\ntestScores (first three): \n{0}'
 print '\neigenvaluesTest: \n{0}'.format(eigenvaluesTest)
 
 
-# In[ ]:
+# In[157]:
 
 # TEST PCA Function (2a)
 Test.assertTrue(checkBasis(topComponentsCorrelated.T,
@@ -287,7 +299,7 @@ Test.assertTrue(np.allclose(eigenvaluesCorrelated, [1.94345403, 0.13820481]),
                            'incorrect values for eigenvaluesCorrelated')
 topComponentsCorrelatedK1, correlatedDataScoresK1, eigenvaluesCorrelatedK1 = pca(correlatedData, 1)
 Test.assertTrue(checkBasis(topComponentsCorrelatedK1.T, [0.68915649,  0.72461254]),
-               'incorrect value for components when k=1')
+              'incorrect value for components when k=1')
 Test.assertTrue(np.allclose([70.51682806, 69.30622356, 71.13588168],
                             np.vstack(np.abs(correlatedDataScoresK1.take(3))).T),
                 'incorrect value for scores when k=1')
@@ -303,13 +315,13 @@ Test.assertTrue(np.allclose(eigenvaluesTest, [ 128, 0, 0, 0 ]), 'incorrect value
 # #### **(2b) PCA on `dataRandom`**
 # #### Next, use the PCA function we just developed to find the top two principal components of the spherical `dataRandom` we created in Visualization 1.
 
-# In[ ]:
+# In[158]:
 
 # TODO: Replace <FILL IN> with appropriate code
 randomData = sc.parallelize(dataRandom)
 
 # Use pca on randomData
-topComponentsRandom, randomDataScoresAuto, eigenvaluesRandom = <FILL IN>
+topComponentsRandom, randomDataScoresAuto, eigenvaluesRandom = pca(randomData, 2)
 
 print 'topComponentsRandom: \n{0}'.format(topComponentsRandom)
 print ('\nrandomDataScoresAuto (first three): \n{0}'
@@ -317,7 +329,7 @@ print ('\nrandomDataScoresAuto (first three): \n{0}'
 print '\neigenvaluesRandom: \n{0}'.format(eigenvaluesRandom)
 
 
-# In[ ]:
+# In[159]:
 
 # TEST PCA on `dataRandom` (2b)
 Test.assertTrue(checkBasis(topComponentsRandom.T,
@@ -334,7 +346,7 @@ Test.assertTrue(np.allclose(eigenvaluesRandom, [1.4204546, 0.99521397]),
 # #### **Visualization 2: PCA projection**
 # #### Plot the original data and the 1-dimensional reconstruction using the top principal component to see how the PCA solution looks.  The original data is plotted as before; however, the 1-dimensional reconstruction (projection) is plotted in green on top of the original data and the vectors (lines) representing the two principal components are shown as dotted lines.
 
-# In[ ]:
+# In[160]:
 
 def projectPointsAndGetLines(data, components, xRange):
     """Project original data onto first component and get line details for top two components."""
@@ -357,7 +369,7 @@ def projectPointsAndGetLines(data, components, xRange):
             ([lineStartP2X1, lineEndP2X1], [lineStartP2X2, lineEndP2X2]))
 
 
-# In[ ]:
+# In[161]:
 
 ((x1, x2), (line1X1, line1X2), (line2X1, line2X2)) =     projectPointsAndGetLines(correlatedData, topComponentsCorrelated, 5)
 
@@ -373,7 +385,7 @@ plt.scatter(x1, x2, s=14**2, c='#62c162', alpha=.75)
 pass
 
 
-# In[ ]:
+# In[162]:
 
 ((x1, x2), (line1X1, line1X2), (line2X1, line2X2)) =     projectPointsAndGetLines(randomData, topComponentsRandom, 5)
 
@@ -394,7 +406,7 @@ pass
 #  
 # #### In the 3D graphs below, we have included the 2D plane that corresponds to the top two principal components, i.e. the plane with the smallest euclidean distance between the points and itself. Notice that the data points, despite living in three-dimensions, are found near a two-dimensional plane: the left graph shows how most points are close to the plane when it is viewed from its side, while the right graph shows that the plane covers most of the variance in the data.  Note that darker blues correspond to points with higher values for the third dimension.
 
-# In[ ]:
+# In[163]:
 
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -448,11 +460,11 @@ pass
 # #### **(2c) 3D to 2D**
 # #### We will now use PCA to see if we can recover the 2-dimensional plane on which the data live. Parallelize the data, and use our PCA function from above, with $ \scriptsize k=2 $ components.
 
-# In[ ]:
+# In[164]:
 
 # TODO: Replace <FILL IN> with appropriate code
 threeDData = sc.parallelize(dataThreeD)
-componentsThreeD, threeDScores, eigenvaluesThreeD = <FILL IN>
+componentsThreeD, threeDScores, eigenvaluesThreeD = pca(threeDData, 2)
 
 print 'componentsThreeD: \n{0}'.format(componentsThreeD)
 print ('\nthreeDScores (first three): \n{0}'
@@ -460,7 +472,7 @@ print ('\nthreeDScores (first three): \n{0}'
 print '\neigenvaluesThreeD: \n{0}'.format(eigenvaluesThreeD)
 
 
-# In[ ]:
+# In[165]:
 
 # TEST 3D to 2D (2c)
 Test.assertEquals(componentsThreeD.shape, (3, 2), 'incorrect shape for componentsThreeD')
@@ -475,7 +487,7 @@ Test.assertTrue(np.allclose(np.abs(np.sum(threeDScores.take(3))), 237.782834092)
 # #### **Visualization 4: 2D representation of 3D data**
 # #### See the 2D version of the data that captures most of its original structure.  Note that darker blues correspond to points with higher values for the original data's third dimension.
 
-# In[ ]:
+# In[166]:
 
 scoresThreeD = np.asarray(threeDScores.collect())
 
@@ -490,7 +502,7 @@ pass
 # #### **(2d) Variance explained**
 # #### Finally, let's quantify how much of the variance is being captured by PCA in each of the three synthetic datasets we've analyzed.  To do this, we'll compute the fraction of retained variance by the top principal components.  Recall that the eigenvalue corresponding to each principal component captures the variance along this direction.  If our initial data is $\scriptsize d$-dimensional, then the total variance in our data equals: $ \scriptsize \sum_{i=1}^d \lambda_i $, where $\scriptsize \lambda_i$ is the eigenvalue corresponding to the $\scriptsize i$th principal component. Moreover, if we use PCA with some $\scriptsize k < d$, then we can compute the variance retained by these principal components by adding the top $\scriptsize k$ eigenvalues.  The fraction of retained variance equals the sum of the top $\scriptsize k$ eigenvalues divided by the sum of all of the eigenvalues.
 
-# In[ ]:
+# In[175]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def varianceExplained(data, k=1):
@@ -505,8 +517,8 @@ def varianceExplained(data, k=1):
         float: A number between 0 and 1 representing the percentage of variance explained
             by the top `k` eigenvectors.
     """
-    components, scores, eigenvalues = <FILL IN>
-    <FILL IN>
+    components, scores, eigenvalues = pca(data, k)
+    return eigenvalues[:k].sum()/float(eigenvalues.sum())
 
 varianceRandom1 = varianceExplained(randomData, 1)
 varianceCorrelated1 = varianceExplained(correlatedData, 1)
@@ -525,7 +537,7 @@ print ('\nPercentage of variance explained by the first two components of threeD
        .format(varianceThreeD2 * 100))
 
 
-# In[ ]:
+# In[177]:
 
 # TEST Variance explained (2d)
 Test.assertTrue(np.allclose(varianceRandom1, 0.588017172066), 'incorrect value for varianceRandom1')
