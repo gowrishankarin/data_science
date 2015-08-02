@@ -24,7 +24,7 @@
 #  
 # #### Note that, for reference, you can look up the details of the relevant Spark methods in [Spark's Python API](https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD) and the relevant NumPy methods in the [NumPy Reference](http://docs.scipy.org/doc/numpy/reference/index.html)
 
-# In[2]:
+# In[18]:
 
 labVersion = 'cs190_week5_v_1_2'
 
@@ -37,7 +37,7 @@ labVersion = 'cs190_week5_v_1_2'
 #  
 # #### In our visualizations below, we will specify the mean of each dimension to be 50 and the variance along each dimension to be 1.  We will explore two different values for the covariance: 0 and 0.9. When the covariance is zero, the two dimensions are uncorrelated, and hence the data looks spherical.  In contrast, when the covariance is 0.9, the two dimensions are strongly (positively) correlated and thus the data is non-spherical.  As we'll see in Parts 1 and 2, the non-spherical data is amenable to dimensionality reduction via PCA, while the spherical data is not.
 
-# In[3]:
+# In[19]:
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -63,7 +63,7 @@ def create2DGaussian(mn, sigma, cov, n):
     return np.random.multivariate_normal(np.array([mn, mn]), np.array([[sigma, cov], [cov, sigma]]), n)
 
 
-# In[4]:
+# In[20]:
 
 dataRandom = create2DGaussian(mn=50, sigma=1, cov=0, n=100)
 
@@ -75,7 +75,7 @@ plt.scatter(dataRandom[:,0], dataRandom[:,1], s=14**2, c='#d6ebf2', edgecolors='
 pass
 
 
-# In[5]:
+# In[21]:
 
 dataCorrelated = create2DGaussian(mn=50, sigma=1, cov=0.9, n=100)
 
@@ -92,7 +92,7 @@ pass
 # #### PCA can be interpreted as identifying the "directions" along which the data vary the most. In the first step of PCA, we must first center our data.  Working with our correlated dataset, first compute the mean of each feature (column) in the dataset.  Then for each observation, modify the features by subtracting their corresponding mean, to create a zero mean dataset.
 # #### Note that `correlatedData` is an RDD of NumPy arrays.  This allows us to perform certain operations more succinctly.  For example, we can sum the columns of our dataset using `correlatedData.sum()`.
 
-# In[6]:
+# In[22]:
 
 # TODO: Replace <FILL IN> with appropriate code
 correlatedData = sc.parallelize(dataCorrelated)
@@ -105,7 +105,7 @@ print correlatedData.take(1)
 print correlatedDataZeroMean.take(1)
 
 
-# In[7]:
+# In[23]:
 
 # TEST Interpreting PCA (1a)
 from test_helper import Test
@@ -120,7 +120,7 @@ Test.assertTrue(np.allclose(correlatedDataZeroMean.take(1)[0], [-0.28561917, 0.1
 #  
 # #### Note that [np.outer()](http://docs.scipy.org/doc/numpy/reference/generated/numpy.outer.html) can be used to calculate the outer product of two NumPy arrays.
 
-# In[8]:
+# In[24]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # Compute the covariance matrix using outer products and correlatedDataZeroMean
@@ -128,7 +128,7 @@ correlatedCov = correlatedDataZeroMean.map(lambda x: (np.outer(x, x))).sum()/flo
 print correlatedCov
 
 
-# In[9]:
+# In[25]:
 
 # TEST Sample covariance matrix (1b)
 covResult = [[ 0.99558386,  0.90148989], [0.90148989, 1.08607497]]
@@ -138,7 +138,7 @@ Test.assertTrue(np.allclose(covResult, correlatedCov), 'incorrect value for corr
 # #### **(1c) Covariance Function**
 # #### Next, use the expressions above to write a function to compute the sample covariance matrix for an arbitrary `data` RDD.
 
-# In[10]:
+# In[26]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def estimateCovariance(data):
@@ -163,7 +163,7 @@ correlatedCovAuto= estimateCovariance(correlatedData)
 print correlatedCovAuto
 
 
-# In[11]:
+# In[27]:
 
 # TEST Covariance function (1c)
 correctCov = [[ 0.99558386,  0.90148989], [0.90148989, 1.08607497]]
@@ -177,7 +177,7 @@ Test.assertTrue(np.allclose(correctCov, correlatedCovAuto),
 # #### Use a function from `numpy.linalg` called [eigh](http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.eigh.html) to perform the eigendecomposition.  Next, sort the eigenvectors based on their corresponding eigenvalues (from high to low), yielding a matrix where the columns are the eigenvectors (and the first column is the top eigenvector).  Note that [np.argsort](http://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy-argsort) can be used to obtain the indices of the eigenvalues that correspond to the ascending order of eigenvalues.  Finally, set the `topComponent` variable equal to the top eigenvector or prinicipal component, which is a $\scriptsize 2 $-dimensional vector (array with two values).
 # #### Note that the eigenvectors returned by `eigh` appear in the columns and not the rows.  For example, the first eigenvector of `eigVecs` would be found in the first column and could be accessed using `eigVecs[:,0]`.
 
-# In[30]:
+# In[28]:
 
 # TODO: Replace <FILL IN> with appropriate code
 from numpy.linalg import eigh
@@ -193,7 +193,7 @@ topComponent = eigVecs[:,inds[0]]
 print '\ntop principal component: {0}'.format(topComponent)
 
 
-# In[31]:
+# In[29]:
 
 # TEST Eigendecomposition (1d)
 def checkBasis(vectors, correct):
@@ -205,7 +205,7 @@ Test.assertTrue(checkBasis(topComponent, [0.68915649, 0.72461254]),
 # #### **(1e) PCA scores**
 # #### We just computed the top principal component for a 2-dimensional non-spherical dataset.  Now let's use this principal component to derive a one-dimensional representation for the original data. To compute these compact representations, which are sometimes called PCA "scores", calculate the dot product between each data point in the raw data and the top principal component.
 
-# In[32]:
+# In[30]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # Use the topComponent and the data from correlatedData to generate PCA scores
@@ -213,7 +213,7 @@ correlatedDataScores = correlatedData.map(lambda x: x.dot(topComponent))
 print 'one-dimensional data (first three):\n{0}'.format(np.asarray(correlatedDataScores.take(3)))
 
 
-# In[33]:
+# In[31]:
 
 # TEST PCA Scores (1e)
 firstThree = [70.51682806, 69.30622356, 71.13588168]
@@ -228,7 +228,7 @@ Test.assertTrue(checkBasis(correlatedDataScores.take(3), firstThree),
 #  
 # ####Note: As discussed in lecture, our implementation is a reasonable strategy when $\scriptsize d $ is small, though more efficient distributed algorithms exist when $\scriptsize d $ is large.
 
-# In[156]:
+# In[32]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def pca(data, k=2):
@@ -285,7 +285,7 @@ print ('\ntestScores (first three): \n{0}'
 print '\neigenvaluesTest: \n{0}'.format(eigenvaluesTest)
 
 
-# In[157]:
+# In[33]:
 
 # TEST PCA Function (2a)
 Test.assertTrue(checkBasis(topComponentsCorrelated.T,
@@ -315,7 +315,7 @@ Test.assertTrue(np.allclose(eigenvaluesTest, [ 128, 0, 0, 0 ]), 'incorrect value
 # #### **(2b) PCA on `dataRandom`**
 # #### Next, use the PCA function we just developed to find the top two principal components of the spherical `dataRandom` we created in Visualization 1.
 
-# In[158]:
+# In[34]:
 
 # TODO: Replace <FILL IN> with appropriate code
 randomData = sc.parallelize(dataRandom)
@@ -329,7 +329,7 @@ print ('\nrandomDataScoresAuto (first three): \n{0}'
 print '\neigenvaluesRandom: \n{0}'.format(eigenvaluesRandom)
 
 
-# In[159]:
+# In[35]:
 
 # TEST PCA on `dataRandom` (2b)
 Test.assertTrue(checkBasis(topComponentsRandom.T,
@@ -346,7 +346,7 @@ Test.assertTrue(np.allclose(eigenvaluesRandom, [1.4204546, 0.99521397]),
 # #### **Visualization 2: PCA projection**
 # #### Plot the original data and the 1-dimensional reconstruction using the top principal component to see how the PCA solution looks.  The original data is plotted as before; however, the 1-dimensional reconstruction (projection) is plotted in green on top of the original data and the vectors (lines) representing the two principal components are shown as dotted lines.
 
-# In[160]:
+# In[36]:
 
 def projectPointsAndGetLines(data, components, xRange):
     """Project original data onto first component and get line details for top two components."""
@@ -369,7 +369,7 @@ def projectPointsAndGetLines(data, components, xRange):
             ([lineStartP2X1, lineEndP2X1], [lineStartP2X2, lineEndP2X2]))
 
 
-# In[161]:
+# In[37]:
 
 ((x1, x2), (line1X1, line1X2), (line2X1, line2X2)) =     projectPointsAndGetLines(correlatedData, topComponentsCorrelated, 5)
 
@@ -385,7 +385,7 @@ plt.scatter(x1, x2, s=14**2, c='#62c162', alpha=.75)
 pass
 
 
-# In[162]:
+# In[38]:
 
 ((x1, x2), (line1X1, line1X2), (line2X1, line2X2)) =     projectPointsAndGetLines(randomData, topComponentsRandom, 5)
 
@@ -406,7 +406,7 @@ pass
 #  
 # #### In the 3D graphs below, we have included the 2D plane that corresponds to the top two principal components, i.e. the plane with the smallest euclidean distance between the points and itself. Notice that the data points, despite living in three-dimensions, are found near a two-dimensional plane: the left graph shows how most points are close to the plane when it is viewed from its side, while the right graph shows that the plane covers most of the variance in the data.  Note that darker blues correspond to points with higher values for the third dimension.
 
-# In[163]:
+# In[39]:
 
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -460,7 +460,7 @@ pass
 # #### **(2c) 3D to 2D**
 # #### We will now use PCA to see if we can recover the 2-dimensional plane on which the data live. Parallelize the data, and use our PCA function from above, with $ \scriptsize k=2 $ components.
 
-# In[164]:
+# In[40]:
 
 # TODO: Replace <FILL IN> with appropriate code
 threeDData = sc.parallelize(dataThreeD)
@@ -472,7 +472,7 @@ print ('\nthreeDScores (first three): \n{0}'
 print '\neigenvaluesThreeD: \n{0}'.format(eigenvaluesThreeD)
 
 
-# In[165]:
+# In[41]:
 
 # TEST 3D to 2D (2c)
 Test.assertEquals(componentsThreeD.shape, (3, 2), 'incorrect shape for componentsThreeD')
@@ -487,7 +487,7 @@ Test.assertTrue(np.allclose(np.abs(np.sum(threeDScores.take(3))), 237.782834092)
 # #### **Visualization 4: 2D representation of 3D data**
 # #### See the 2D version of the data that captures most of its original structure.  Note that darker blues correspond to points with higher values for the original data's third dimension.
 
-# In[166]:
+# In[42]:
 
 scoresThreeD = np.asarray(threeDScores.collect())
 
@@ -502,7 +502,7 @@ pass
 # #### **(2d) Variance explained**
 # #### Finally, let's quantify how much of the variance is being captured by PCA in each of the three synthetic datasets we've analyzed.  To do this, we'll compute the fraction of retained variance by the top principal components.  Recall that the eigenvalue corresponding to each principal component captures the variance along this direction.  If our initial data is $\scriptsize d$-dimensional, then the total variance in our data equals: $ \scriptsize \sum_{i=1}^d \lambda_i $, where $\scriptsize \lambda_i$ is the eigenvalue corresponding to the $\scriptsize i$th principal component. Moreover, if we use PCA with some $\scriptsize k < d$, then we can compute the variance retained by these principal components by adding the top $\scriptsize k$ eigenvalues.  The fraction of retained variance equals the sum of the top $\scriptsize k$ eigenvalues divided by the sum of all of the eigenvalues.
 
-# In[175]:
+# In[43]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def varianceExplained(data, k=1):
@@ -537,7 +537,7 @@ print ('\nPercentage of variance explained by the first two components of threeD
        .format(varianceThreeD2 * 100))
 
 
-# In[177]:
+# In[44]:
 
 # TEST Variance explained (2d)
 Test.assertTrue(np.allclose(varianceRandom1, 0.588017172066), 'incorrect value for varianceRandom1')
@@ -558,7 +558,7 @@ Test.assertTrue(np.allclose(varianceThreeD2, 0.993967356912), 'incorrect value f
 # #### **(3a) Load neuroscience data**
 # #### In the next sections we will use PCA to capture structure in neural datasets. Before doing the analysis, we will load and do some basic inspection of the data. The raw data are currently stored as a text file. Every line in the file contains the time series of image intensity for a single pixel in a time-varying image (i.e. a movie). The first two numbers in each line are the spatial coordinates of the pixel, and the remaining numbers are the time series. We'll use first() to inspect a single row, and print just the first 100 characters.
 
-# In[178]:
+# In[45]:
 
 import os
 baseDir = os.path.join('data')
@@ -577,7 +577,7 @@ assert lines.count() == 46460
 # #### **(3b) Parse the data**
 # #### Parse the data into a key-value representation. We want each key to be a tuple of two-dimensional spatial coordinates and each value to be a NumPy array storing the associated time series. Write a function that converts a line of text into a (`tuple`, `np.ndarray`) pair. Then apply this function to each record in the RDD, and inspect the first entry of the new parsed data set. Now would be a good time to cache the data, and force a computation by calling count, to ensure the data are cached.
 
-# In[259]:
+# In[46]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def parse(line):
@@ -612,7 +612,7 @@ print ('\nFirst entry of rawData (with only the first five values of the NumPy a
        .format(entry[0], entry[1][:5]))
 
 
-# In[260]:
+# In[47]:
 
 # TEST Parse the data (3b)
 Test.assertTrue(isinstance(entry[0], tuple), "entry's key should be a tuple")
@@ -629,7 +629,7 @@ Test.assertTrue(np.allclose(np.sum(entry[1]), 24683.5), 'incorrect values in ent
 # #### **(3c) Min and max flouresence**
 # #### Next we'll do some basic preprocessing on the data. The raw time-series data are in units of image flouresence, and baseline flouresence varies somewhat arbitrarily from pixel to pixel. First, compute the minimum and maximum values across all pixels.
 
-# In[261]:
+# In[48]:
 
 # TODO: Replace <FILL IN> with appropriate code
 mn = rawData.map(lambda x: min(x[1])).min()
@@ -638,7 +638,7 @@ mx = rawData.map(lambda x: max(x[1])).max()
 print mn, mx
 
 
-# In[262]:
+# In[49]:
 
 # TEST Min and max flouresence (3c)
 Test.assertTrue(np.allclose(mn, 100.6), 'incorrect value for mn')
@@ -648,7 +648,7 @@ Test.assertTrue(np.allclose(mx, 940.8), 'incorrect value for mx')
 # #### **Visualization 5: Pixel intensity**
 # #### Let's now see how a random pixel varies in value over the course of the time series.  We'll visualize a pixel that exhibits a standard deviation of over 100.
 
-# In[263]:
+# In[50]:
 
 example = rawData.filter(lambda (k, v): np.std(v) > 100).values().first()
 
@@ -663,7 +663,7 @@ pass
 # #### **(3d) Fractional signal change**
 # ####To convert from these raw flouresence units to more intuitive units of fractional signal change, write a function that takes a time series for a particular pixel and subtracts and divides by the mean.  Then apply this function to all the pixels. Confirm that this changes the maximum and minimum values.
 
-# In[284]:
+# In[51]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def rescale(ts):
@@ -690,7 +690,7 @@ mxScaled = scaledData.map(lambda (k, v): v).map(lambda v: max(v)).max()
 print mnScaled, mxScaled
 
 
-# In[285]:
+# In[52]:
 
 # TEST Fractional signal change (3d)
 Test.assertTrue(isinstance(scaledData.first()[1], np.ndarray), 'incorrect type returned by rescale')
@@ -701,7 +701,7 @@ Test.assertTrue(np.allclose(mxScaled, 0.90544876), 'incorrect value for mxScaled
 # #### **Visualization 6: Normalized data**
 # #### Now that we've normalized our data, let's once again see how a random pixel varies in value over the course of the time series.  We'll visualize a pixel that exhibits a standard deviation of over 0.1.  Note the change in scale on the y-axis compared to the previous visualization.
 
-# In[286]:
+# In[53]:
 
 example = scaledData.filter(lambda (k, v): np.std(v) > 0.1).values().first()
 
@@ -718,15 +718,15 @@ pass
 #  
 # #### Use the `pca` function from Part (2a) to perform PCA on the preprocessed neuroscience data with $\scriptsize k = 3$, resulting in a new low-dimensional 46460 by 3 dataset.  The `pca` function takes an RDD of arrays, but `data` is an RDD of key-value pairs, so you'll need to extract the values.
 
-# In[289]:
+# In[57]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # Run pca using scaledData
 print scaledData.first()[1]
-componentsScaled, scaledScores, eigenvaluesScaled = scaledData.map(lambda x: pca(x[1], k = 2))
+componentsScaled, scaledScores, eigenvaluesScaled = pca(scaledData, k = 2)
 
 
-# In[ ]:
+# In[58]:
 
 # TEST PCA on the scaled data (3e)
 Test.assertEquals(componentsScaled.shape, (240, 3), 'incorrect shape for componentsScaled')
@@ -742,7 +742,7 @@ Test.assertTrue(np.allclose(np.sum(eigenvaluesScaled[:5]), 0.206987501564),
 # #### Now, we'll view the scores for the top two component as images.  Note that we reshape the vectors by the dimensions of the original image, 230 x 202.
 # #### These graphs map the values for the single component to a grayscale image.  This provides us with a visual representation which we can use to see the overall structure of the zebrafish brain and to identify where high and low values occur.  However, using this representation, there is a substantial amount of useful information that is difficult to interpret.  In the next visualization, we'll see how we can improve interpretability by combining the two principal components into a single image using a color mapping.
 
-# In[ ]:
+# In[59]:
 
 import matplotlib.cm as cm
 
@@ -757,7 +757,7 @@ image = plt.imshow(imageOneScaled,interpolation='nearest', aspect='auto', cmap=c
 pass
 
 
-# In[ ]:
+# In[60]:
 
 imageTwoScaled = scoresScaled[:,1].reshape(230, 202).T
 
@@ -776,7 +776,7 @@ pass
 
 # #### Optional Details: Note that we use [polar coordinates](https://en.wikipedia.org/wiki/Polar_coordinate_system) to map our low-dimensional points to colors.  Using polar coordinates provides us with an angle $ (\phi) $ and magnitude $ (\rho) $.  We then use the well-known polar color space, [hue-saturation-value](https://en.wikipedia.org/wiki/HSL_and_HSV) (HSV), and map the angle to hue and the magnitude to value (brightness).  This maps low magnitude points to black while allowing larger magnitude points to be differentiated by their angle. Additionally, the function `polarTransform` that maps low-dimensional representations to colors has an input parameter called `scale`, which we set  to 2.0, and you can try lower values for the two graphs to see more nuanced mappings -- values near 1.0 are particularly interesting.
 
-# In[ ]:
+# In[61]:
 
 # Adapted from python-thunder's Colorize.transform where cmap='polar'.
 # Checkout the library at: https://github.com/thunder-project/thunder and
@@ -798,7 +798,7 @@ def polarTransform(scale, img):
     return np.clip(out * scale, 0, 1)
 
 
-# In[ ]:
+# In[62]:
 
 # Show the polar mapping from principal component coordinates to colors.
 x1AbsMax = np.max(np.abs(imageOneScaled))
@@ -827,7 +827,7 @@ ax.get_yaxis().set_ticklabels(map(lambda x: '{0:.1f}'.format(x), x2Marks))
 pass
 
 
-# In[ ]:
+# In[63]:
 
 # Use the same transformation on the image data
 # Try changing the first parameter to lower values
@@ -852,7 +852,7 @@ pass
 # #### $$\begin{bmatrix} 1 & 0 & 1 \\\ 0 & 3 & 0 \end{bmatrix} \begin{bmatrix} 1 \\\ 2 \\\ 3 \end{bmatrix} = \begin{bmatrix} 4 \\\ 6 \end{bmatrix} $$
 # #### For this exercise, you'll create several arrays that perform different types of aggregation.  The aggregation is specified in the comments before each array.  You should fill in the array values by hand.  We'll automate array creation in the next two exercises.
 
-# In[ ]:
+# In[64]:
 
 # TODO: Replace <FILL IN> with appropriate code
 vector = np.array([0., 1., 2., 3., 4., 5.])
@@ -861,27 +861,26 @@ vector = np.array([0., 1., 2., 3., 4., 5.])
 # a two element array where the first element is the sum of the 0, 2, and 4 indexed elements of
 # vector and the second element is the sum of the 1, 3, and 5 indexed elements of vector.
 # This should be a 2 row by 6 column array
-sumEveryOther = np.array(<FILL IN>)
+sumEveryOther = np.array([[1, 0, 1, 0, 1, 0], [0, 1, 0, 1, 0, 1]])
 
 # Create a multi-dimensional array that when multiplied (using .dot) against vector, results in a
 # three element array where the first element is the sum of the 0 and 3 indexed elements of vector,
 # the second element is the sum of the 1 and 4 indexed elements of vector, and the third element is
 # the sum of the 2 and 5 indexed elements of vector.
 # This should be a 3 row by 6 column array
-sumEveryThird = np.array(<FILL IN>)
+sumEveryThird = np.array([[1, 0, 0, 1, 0, 0], [0, 1, 0, 0, 1, 0], [0, 0, 1, 0, 0, 1]])
 
 # Create a multi-dimensional array that can be used to sum the first three elements of vector and
 # the last three elements of vector, which returns a two element array with those values when dotted
 # with vector.
 # This should be a 2 row by 6 column array
-sumByThree = np.array(<FILL IN>)
+sumByThree = np.array([[1, 1, 1, 0, 0, 0], [0, 0, 0, 1, 1, 1]])
 
 # Create a multi-dimensional array that sums the first two elements, second two elements, and
 # last two elements of vector, which returns a three element array with those values when dotted
 # with vector.
 # This should be a 3 row by 6 column array
-sumByTwo = np.array(<FILL IN>)
-
+sumByTwo = np.array([[1, 1, 0, 0, 0, 0], [0, 0, 1, 1, 0, 0], [0, 0, 0, 0, 1, 1]])
 print 'sumEveryOther.dot(vector):\t{0}'.format(sumEveryOther.dot(vector))
 print 'sumEveryThird.dot(vector):\t{0}'.format(sumEveryThird.dot(vector))
 
@@ -889,7 +888,7 @@ print '\nsumByThree.dot(vector):\t{0}'.format(sumByThree.dot(vector))
 print 'sumByTwo.dot(vector): \t{0}'.format(sumByTwo.dot(vector))
 
 
-# In[ ]:
+# In[65]:
 
 # TEST Aggregation using arrays (4a)
 Test.assertEquals(sumEveryOther.shape, (2, 6), 'incorrect shape for sumEveryOther')
@@ -910,19 +909,19 @@ Test.assertTrue(np.allclose(sumByTwo.dot(vector), [1, 5, 9]), 'incorrect value f
 # #### $$ np.eye( 3 ) \to \begin{bmatrix} 1 & 0 & 0 \\\ 0 & 1 & 0 \\\ 0 & 0 & 1 \end{bmatrix} $$
 # #### In this exercise, recreate `sumEveryOther` and `sumEveryThird` using `np.tile` and `np.eye`.
 
-# In[ ]:
+# In[66]:
 
 # Reference for what to recreate
 print 'sumEveryOther: \n{0}'.format(sumEveryOther)
 print '\nsumEveryThird: \n{0}'.format(sumEveryThird)
 
 
-# In[ ]:
+# In[72]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # Use np.tile and np.eye to recreate the arrays
-sumEveryOtherTile = <FILL IN>
-sumEveryThirdTile = <FILL IN>
+sumEveryOtherTile = np.tile(np.array([[1, 0], [0, 1]]), 3)
+sumEveryThirdTile = np.tile(np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]), 2)
 
 print sumEveryOtherTile
 print 'sumEveryOtherTile.dot(vector): {0}'.format(sumEveryOtherTile.dot(vector))
@@ -930,7 +929,7 @@ print '\n', sumEveryThirdTile
 print 'sumEveryThirdTile.dot(vector): {0}'.format(sumEveryThirdTile.dot(vector))
 
 
-# In[ ]:
+# In[73]:
 
 # TEST Recreate with `np.tile` and `np.eye` (4b)
 Test.assertEquals(sumEveryOtherTile.shape, (2, 6), 'incorrect shape for sumEveryOtherTile')
@@ -948,19 +947,19 @@ Test.assertTrue(np.allclose(sumEveryThirdTile.dot(vector), [3, 5, 7]),
 # #### $$ \begin{bmatrix} 1 & 2 \\\ 3 & 4 \end{bmatrix} \otimes \begin{bmatrix} 1 & 2 \\\ 3 & 4 \end{bmatrix} = \begin{bmatrix} 1 \cdot 1 & 1 \cdot 2 & 2 \cdot 1 & 2 \cdot 2 \\\ 1 \cdot 3 & 1 \cdot 4 & 2 \cdot 3 & 2 \cdot 4 \\\ 3 \cdot 1 & 3 \cdot 2 & 4 \cdot 1 & 4 \cdot 2 \\\ 3 \cdot 3 & 3 \cdot 4 & 4 \cdot 3 & 4 \cdot 4 \end{bmatrix} = \begin{bmatrix} 1 & 2 & 2 & 4 \\\ 3 & 4 & 6 & 8 \\\ 3 & 6 & 4 & 8 \\\ 9 & 12 & 12 & 16 \end{bmatrix} $$
 # #### For this exercise, you'll recreate the `sumByThree` and `sumByTwo` arrays using `np.kron`, `np.eye`, and `np.ones`.  Note that `np.ones` creates an array of all ones.
 
-# In[ ]:
+# In[74]:
 
 # Reference for what to recreate
 print 'sumByThree: \n{0}'.format(sumByThree)
 print '\nsumByTwo: \n{0}'.format(sumByTwo)
 
 
-# In[ ]:
+# In[112]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # Use np.kron, np.eye, and np.ones to recreate the arrays
-sumByThreeKron = <FILL IN>
-sumByTwoKron = <FILL IN>
+sumByThreeKron = np.kron(np.eye(2), [1, 1, 1])
+sumByTwoKron = np.kron(np.eye(3), [1, 1])
 
 print sumByThreeKron
 print 'sumByThreeKron.dot(vector): {0}'.format(sumByThreeKron.dot(vector))
@@ -968,7 +967,7 @@ print '\n', sumByTwoKron
 print 'sumByTwoKron.dot(vector): {0}'.format(sumByTwoKron.dot(vector))
 
 
-# In[ ]:
+# In[113]:
 
 # TEST Recreate with `np.kron` (4c)
 Test.assertEquals(sumByThreeKron.shape, (2, 6), 'incorrect shape for sumByThreeKron')
@@ -987,7 +986,7 @@ Test.assertTrue(np.allclose(sumByTwoKron.dot(vector), [1, 5, 9]),
 
 # TODO: Replace <FILL IN> with appropriate code
 # Create a multi-dimensional array to perform the aggregation
-T = <FILL IN>
+T = np.tile(np.eye(20), 12) 
 
 # Transform scaledData using T.  Make sure to retain the keys.
 timeData = scaledData.<FILL IN>
@@ -1064,7 +1063,7 @@ pass
 
 # TODO: Replace <FILL IN> with appropriate code
 # Create a multi-dimensional array to perform the aggregation
-D = <FILL IN>
+D = np.tile(np.eye(20), 12) 
 
 # Transform scaledData using D.  Make sure to retain the keys.
 directionData = scaledData.<FILL IN>
