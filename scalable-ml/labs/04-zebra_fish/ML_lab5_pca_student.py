@@ -558,7 +558,7 @@ Test.assertTrue(np.allclose(varianceThreeD2, 0.993967356912), 'incorrect value f
 # #### **(3a) Load neuroscience data**
 # #### In the next sections we will use PCA to capture structure in neural datasets. Before doing the analysis, we will load and do some basic inspection of the data. The raw data are currently stored as a text file. Every line in the file contains the time series of image intensity for a single pixel in a time-varying image (i.e. a movie). The first two numbers in each line are the spatial coordinates of the pixel, and the remaining numbers are the time series. We'll use first() to inspect a single row, and print just the first 100 characters.
 
-# In[ ]:
+# In[178]:
 
 import os
 baseDir = os.path.join('data')
@@ -577,7 +577,7 @@ assert lines.count() == 46460
 # #### **(3b) Parse the data**
 # #### Parse the data into a key-value representation. We want each key to be a tuple of two-dimensional spatial coordinates and each value to be a NumPy array storing the associated time series. Write a function that converts a line of text into a (`tuple`, `np.ndarray`) pair. Then apply this function to each record in the RDD, and inspect the first entry of the new parsed data set. Now would be a good time to cache the data, and force a computation by calling count, to ensure the data are cached.
 
-# In[ ]:
+# In[259]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def parse(line):
@@ -597,9 +597,13 @@ def parse(line):
             a `tuple` containing two values and the pixel intensity is stored in an NumPy array
             which contains 240 values.
     """
-    <FILL IN>
+    splits = line.split(' ')
+    intensityArray = np.array([float(x) for x in splits[2:]])
+    return ((int(splits[0]), int(splits[1])), intensityArray)
 
-rawData = lines.map(parse)
+
+
+rawData = lines.map(lambda x: parse(x))
 rawData.cache()
 entry = rawData.first()
 print 'Length of movie is {0} seconds'.format(len(entry[1]))
@@ -608,7 +612,7 @@ print ('\nFirst entry of rawData (with only the first five values of the NumPy a
        .format(entry[0], entry[1][:5]))
 
 
-# In[ ]:
+# In[260]:
 
 # TEST Parse the data (3b)
 Test.assertTrue(isinstance(entry[0], tuple), "entry's key should be a tuple")
@@ -625,16 +629,16 @@ Test.assertTrue(np.allclose(np.sum(entry[1]), 24683.5), 'incorrect values in ent
 # #### **(3c) Min and max flouresence**
 # #### Next we'll do some basic preprocessing on the data. The raw time-series data are in units of image flouresence, and baseline flouresence varies somewhat arbitrarily from pixel to pixel. First, compute the minimum and maximum values across all pixels.
 
-# In[ ]:
+# In[261]:
 
 # TODO: Replace <FILL IN> with appropriate code
-mn = <FILL IN>
-mx = <FILL IN>
+mn = rawData.map(lambda x: min(x[1])).min()
+mx = rawData.map(lambda x: max(x[1])).max()
 
 print mn, mx
 
 
-# In[ ]:
+# In[262]:
 
 # TEST Min and max flouresence (3c)
 Test.assertTrue(np.allclose(mn, 100.6), 'incorrect value for mn')
@@ -644,7 +648,7 @@ Test.assertTrue(np.allclose(mx, 940.8), 'incorrect value for mx')
 # #### **Visualization 5: Pixel intensity**
 # #### Let's now see how a random pixel varies in value over the course of the time series.  We'll visualize a pixel that exhibits a standard deviation of over 100.
 
-# In[ ]:
+# In[263]:
 
 example = rawData.filter(lambda (k, v): np.std(v) > 100).values().first()
 
@@ -659,7 +663,7 @@ pass
 # #### **(3d) Fractional signal change**
 # ####To convert from these raw flouresence units to more intuitive units of fractional signal change, write a function that takes a time series for a particular pixel and subtracts and divides by the mean.  Then apply this function to all the pixels. Confirm that this changes the maximum and minimum values.
 
-# In[ ]:
+# In[284]:
 
 # TODO: Replace <FILL IN> with appropriate code
 def rescale(ts):
@@ -674,15 +678,19 @@ def rescale(ts):
     Returns:
         np.ndarray: The times series adjusted by subtracting the mean and dividing by the mean.
     """
-    <FILL IN>
+    
+    ave = sum(ts)/len(ts)
+    newTs = (ts - ave) / ave
+    return newTs
 
+   
 scaledData = rawData.mapValues(lambda v: rescale(v))
 mnScaled = scaledData.map(lambda (k, v): v).map(lambda v: min(v)).min()
 mxScaled = scaledData.map(lambda (k, v): v).map(lambda v: max(v)).max()
 print mnScaled, mxScaled
 
 
-# In[ ]:
+# In[285]:
 
 # TEST Fractional signal change (3d)
 Test.assertTrue(isinstance(scaledData.first()[1], np.ndarray), 'incorrect type returned by rescale')
@@ -693,7 +701,7 @@ Test.assertTrue(np.allclose(mxScaled, 0.90544876), 'incorrect value for mxScaled
 # #### **Visualization 6: Normalized data**
 # #### Now that we've normalized our data, let's once again see how a random pixel varies in value over the course of the time series.  We'll visualize a pixel that exhibits a standard deviation of over 0.1.  Note the change in scale on the y-axis compared to the previous visualization.
 
-# In[ ]:
+# In[286]:
 
 example = scaledData.filter(lambda (k, v): np.std(v) > 0.1).values().first()
 
@@ -710,11 +718,12 @@ pass
 #  
 # #### Use the `pca` function from Part (2a) to perform PCA on the preprocessed neuroscience data with $\scriptsize k = 3$, resulting in a new low-dimensional 46460 by 3 dataset.  The `pca` function takes an RDD of arrays, but `data` is an RDD of key-value pairs, so you'll need to extract the values.
 
-# In[ ]:
+# In[289]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # Run pca using scaledData
-componentsScaled, scaledScores, eigenvaluesScaled = <FILL IN>
+print scaledData.first()[1]
+componentsScaled, scaledScores, eigenvaluesScaled = scaledData.map(lambda x: pca(x[1], k = 2))
 
 
 # In[ ]:
