@@ -1,12 +1,108 @@
+---
+title: "Inferential Analysis of Exponential Distribution through Simulation by CLT"
+author: "Gowri Shankar"
+date: "09/09/2015"
+output: html_document
+hitheme: tomorrow
+mode: selfcontained
+highlighter: highlight.js
+framework: io2012
+url:
+  assets: ../../assets
+  lib: ../../librariesNew
+widgets: mathjax
+---
+
+## Overview
+
+Exponential distribution is a process in which events occur continuously and independently
+at a constant average rate.
+
+ - Probability Density Function: **E[X] = λ e^(−λx)**
+ - Cumulative Distribution Function: **Var[X] = 1 − e^(−λx)**
+ - Mean: **1/λ**
+ - Variance: **1/λ^2** i.e Standard Deviation: **1/λ**
+
+This is an inferential report on the simulation analysis conducted on exponential distribution
+data using central limit theorem. It proves theoretical mean and variance quoted above with simulated data.
+
+## Simulations
+Exponentially distributed data is generated using R's **rexp** function. 3 kinds of simulations are done to prove theoretical mean **1/λ** and simulated mean converges.
+
+ - for 1000 iteration with **rate** parameter of **0.2** cumulative mean was calculated
+ - Simulation for 1000 iterations with 40 exponentials
+ - Law of Large Numbers test with 400 exponentials
+ - a histogram is drawn to show the density of distributed data is normal by portraying a bell curve
 
 
-```{r, fig.height=5, fig.width=5}
-n <- 10000; 
+```{r}
+nosims <- 1000; 
 lambda <- 0.2
-means <- cumsum(rexp(n, lambda)) / (1  : n); library(ggplot2)
-g <- ggplot(data.frame(x = 1 : n, y = means), aes(x = x, y = y)) 
-g <- g + geom_hline(yintercept = 1/lambda) + geom_line(size = 2) 
-g <- g + labs(x = "Number of obs", y = "Cumulative mean")
+n = 40
+set.seed(123456)
+```
+
+## Sample Mean vs Theoretical Mean(1000 Iterations)
+
+
+```{r, fig.height=5, fig.width=10}
+means <- cumsum(rexp(nosims, lambda)) / (1  : nosims); library(ggplot2)
+g <- ggplot(data.frame(x = 1 : nosims, y = means), aes(x = x, y = y)) 
+g <- g + geom_hline(yintercept = 1/lambda,  color = I('blue'), size = 1.5) + geom_line(size = 2) 
+g <- g + labs(x = "Number of iterations", y = "Cumulative mean")
 g
 ```
 
+Above plot demonstrates the cumulative mean of sample mean converges eventually at theoretical mean **1/λ = `r 1/lambda`**
+
+
+## Sample Mean vs Theoretical Mean(1000 Iterations of 40 exponentials)
+
+```{r, fig.height=5, fig.width=10}
+
+sim_data = data.frame(x = sapply(1:nosims, function(x) { rexp(n, lambda) }))
+means = data.frame(x = sapply(sim_data[, 1:nosims], mean))
+qplot(x, y, data=data.frame(x = 1:nosims, y = means$x)) + 
+    geom_smooth() + 
+    geom_hline(yintercept = 1/lambda) + 
+    labs(x = "Number of obs", y = "Cumulative mean")
+```
+
+## Law of Large Numbers(1000 Iterations of 400 exponentials)
+No let us look at what happens when number of exponentials are 400 and iterated for 1000 times.
+
+```{r, fig.height=5, fig.width=10}
+means = data.frame(x = sapply(1:nosims, function(x) {
+    mean(rexp(400, lambda))
+}))
+qplot(x, y, data=data.frame(x = 1:nosims, y = means$x)) + 
+    geom_smooth() + 
+    geom_hline(yintercept = 1/lambda) + 
+    labs(x = "Number of obs", y = "Cumulative mean")
+```
+
+Above plot once again proves the sample mean converges at theoretical mean. Now the error is very less, distribution quite closer to **1/λ = `r 1/lambda`**
+
+## Sample Variance vs Theoretical Variance
+Let us take Standard Deviation instead of Variance, so that our plots are uniform.
+
+```{r, fig.height=5, fig.width=10}
+
+sds = sapply(sim_data[, 1:nosims], sd)
+qplot(x, y, data=data.frame(x = 1:nosims, y = sds)) + geom_smooth() + geom_hline(yintercept = 1/lambda) + labs(x = "Number of iteration", y = "Standard Deviation")
+```
+
+This plot also shows the data is dense around **1/λ = `r 1/lambda`**
+
+## Distribution
+
+```{r, fig.height=5, fig.width=10}
+ggplot(data = means, aes(x = x)) + 
+    geom_histogram(aes(y=..density..), fill = I('#aaccff'), color = I('blue')) +
+    stat_function(fun = dnorm, arg = list(mean = 1/lambda, sd = sd(means$x)), color = I('green'), size = 1.5) + 
+    geom_vline(xintercept = 1/lambda, size = 1, color = I('red')) 
+
+```
+
+Above plot is quite Gaussian with dense distribution around the theorteical mean **1/λ = `r 1/lambda`** in red line with sample standard deviation of **1/λ = `r mean(sds)`** in green line.
+Sample mean turned out to be **`r mean(means$x)`**
