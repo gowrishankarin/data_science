@@ -2,15 +2,11 @@
 title: "Inferential Analysis of Exponential Distribution through Simulation by CLT"
 author: "Gowri Shankar"
 date: "09/09/2015"
-output: html_document
-hitheme: tomorrow
-mode: selfcontained
-highlighter: highlight.js
-framework: io2012
-url:
-  assets: ../../assets
-  lib: ../../librariesNew
-widgets: mathjax
+output:
+  html_document: default
+  pdf_document:
+    keep_tex: yes
+header-includes: \usepackage{graphicx}
 ---
 
 ## Overview
@@ -39,7 +35,7 @@ Exponentially distributed data is generated using R's **rexp** function. 3 kinds
 nosims <- 1000; 
 lambda <- 0.2
 n = 40
-set.seed(123456)
+set.seed(123)
 ```
 
 ## Sample Mean vs Theoretical Mean(1000 Iterations)
@@ -53,7 +49,7 @@ g <- g + labs(x = "Number of iterations", y = "Cumulative mean")
 g
 ```
 
-Above plot demonstrates the cumulative mean of sample mean converges eventually at theoretical mean **1/λ = `r 1/lambda`**
+Above plot demonstrates the cumulative mean of sample mean(blue line) converges eventually at theoretical mean **1/λ = `r 1/lambda`**
 
 
 ## Sample Mean vs Theoretical Mean(1000 Iterations of 40 exponentials)
@@ -65,8 +61,9 @@ means = data.frame(x = sapply(sim_data[, 1:nosims], mean))
 qplot(x, y, data=data.frame(x = 1:nosims, y = means$x)) + 
     geom_smooth() + 
     geom_hline(yintercept = 1/lambda) + 
-    labs(x = "Number of obs", y = "Cumulative mean")
+    labs(x = "Number of iterations", y = "Sample mean of 40 exponentials")
 ```
+Black line is theoretical mean and blue one is sample mean
 
 ## Law of Large Numbers(1000 Iterations of 400 exponentials)
 No let us look at what happens when number of exponentials are 400 and iterated for 1000 times.
@@ -78,7 +75,7 @@ means = data.frame(x = sapply(1:nosims, function(x) {
 qplot(x, y, data=data.frame(x = 1:nosims, y = means$x)) + 
     geom_smooth() + 
     geom_hline(yintercept = 1/lambda) + 
-    labs(x = "Number of obs", y = "Cumulative mean")
+    labs(x = "Number of iterations", y = "Sample mean of 400 exponentials")
 ```
 
 Above plot once again proves the sample mean converges at theoretical mean. Now the error is very less, distribution quite closer to **1/λ = `r 1/lambda`**
