@@ -1,6 +1,9 @@
 
 # Francis Galton: Child vs Parent
+
+```{r}
 library(UsingR)
+library(manipulate)
 
 galton_francis <- function() {
     data(galton)
@@ -12,10 +15,11 @@ galton_francis <- function() {
 }
 
 par(mfrow = c(1, 1))
+```
 # Manipulate to minimize 'mu'
 
-library(manipulate)
 
+```{r}
 myHist <- function(mu) {
     hist(galton$child, col = "blue", breaks = 100)
     lines(c(mu, mu), c(0, 150), col = "red", lwd = 5)
@@ -24,9 +28,10 @@ myHist <- function(mu) {
     text(63, 140, paste("MSE = ", round(mse, 2)))
     
 }
+manipulate(myHist(mu), mu = slider(62, 74, step = 0.5))
+```
 
-#manipulate(myHist(mu), mu = slider(62, 74, step = 0.5))
-
+```{r}
 minimizeMu <- function(mu) {
     # Consider the data set given below
     x <- c(0.18, -1.54, 0.42, 0.95)
@@ -37,14 +42,15 @@ minimizeMu <- function(mu) {
     
     hist(x, col = "blue", breaks = 100)
     lines(c(mu, mu), c(-2, 1), col = "red", lwd = 0.5)
-    mse <- mean(w*(x - mu)^2)
+    mse <- sum(w*(x - mu)^2)
     
     text(-1.0, 0.8, paste("mu = ", mu))
     text(-1.0, 0.6, paste("MSE = ", mse, 2))
 }
+manipulate(minimizeMu(mu), mu = slider(0, 0.35, step = 0.01))
+```
 
-#manipulate(minimizeMu(mu), mu = slider(0, 0.35, step = 0.01))
-
+```{r}
 fitThruOrigin <- function(beta) {
     # Consider the following data set
     x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)
@@ -77,9 +83,9 @@ fitThruOrigin <- function(beta) {
  #   plot(x - mean(x), y - mean(y), pch = 19, col = "blue")
     
 }
-
+```
 # manipulate(fitThruOrigin(beta), beta = slider(-0.5, 1.5, step = 0.01))
-
+```{r}
 fitMtCars <- function() {
     # Do "data(mtcars)" from the datasets package and fit the regression model 
     # with mpg as the outcome and weight as the predictor. Give the slope 
@@ -87,7 +93,9 @@ fitMtCars <- function() {
     data(mtcars)
     lm(mpg ~ wt, data = mtcars)
 }
+```
 
+```{r}
 predictor <- function() {
     # Consider the following data set (used above as well). What is the intercept
     # for fitting the model with x as the predictor and y as the outcome
@@ -103,6 +111,6 @@ predictor <- function() {
     
 }
 
-
+```
 
 
