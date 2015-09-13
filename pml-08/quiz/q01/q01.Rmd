@@ -1,0 +1,23 @@
+
+
+
+Suppose that we have created a machine learning algorithm that predicts whether a link will be clicked with 99% sensitivity and 99% specificity. The rate the link is clicked is 1/1000 of visits to a website. If we predict the link will be clicked on a specific visit, what is the probability it will actually be clicked?
+
+P(c|+) = P(+|c).P(c)/ [P(+|c).P(c)] + [P(+|c').P(c')]
+
+P(c|+) = P(+|c).P(c)/ {[P(+|c).P(c)] + [1 - P(-|c').1 - P(c)]}
+
+P(c|+) = Sensitivity.Actual_Probability_Of_Click / [Sensitivity.Actual_Probability_Of_Click + (1-Specificity).(1-Actual_Probability_Of_Click)]
+
+Sensitivity = 99%
+Specificity = 99% 9
+Actual Probability Of Click = 1/1000
+Probability of Pregnancy given Positive Test P_p = ?
+
+```{r}
+sensitivity = 0.99
+specificity = 0.99
+p = 1/1000
+
+sensitivity * p/(sensitivity*p + (1 - specificity)*(1 - p))
+```
