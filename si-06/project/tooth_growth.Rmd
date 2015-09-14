@@ -10,9 +10,28 @@ data(ToothGrowth)
 tg <- ToothGrowth
 
 g <- ggplot(tg,  aes(x = c(1:60), y = len), colour = supp)
-g <- g + geom_point(aes(color = supp)) + 
+g <- g + geom_point(aes(color = supp))  
 g <- g + facet_grid(. ~ dose) + xlab("Observations") + ylab("Length")
 g
 
 ```
 
+Analysing based on **supp**
+
+```{r}
+vc <- tg[1:30]
+oj <- tg[31:60]
+
+difference <- oj$len - vc$len
+
+mn <- mean(difference)
+s <- sd(difference)
+
+mn + c(-1, 1) * qt(0.975, n-1)*s/sqrt(n)
+
+t.test(difference)
+
+t.test(oj$len, vc$len, paired = TRUE)
+
+
+```
