@@ -1,0 +1,18 @@
+
+```{r}
+library(ggplot2)
+```
+
+
+
+```{r, echo = FALSE, fig.width=12, fig.height=6, fig.align='center'}
+data(ToothGrowth)
+tg <- ToothGrowth
+
+g <- ggplot(tg,  aes(x = c(1:60), y = len), colour = supp)
+g <- g + geom_point(aes(color = supp)) + 
+g <- g + facet_grid(. ~ dose) + xlab("Observations") + ylab("Length")
+g
+
+```
+
