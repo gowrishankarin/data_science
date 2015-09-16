@@ -45,3 +45,12 @@ rownames(test_result) <- c("Lower", "Upper")
 test_result
 
 ```
+
+Two sample t-test
+
+```{r}
+dt_M <- data.frame(tg[1:10,]len, tg[31:40,]$len)
+t.test(dt_M[,1], dt_M[,2], paired = TRUE)
+
+
+```
