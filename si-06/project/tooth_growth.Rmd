@@ -19,19 +19,29 @@ g
 Analysing based on **supp**
 
 ```{r}
-vc <- tg[1:30]
-oj <- tg[31:60]
+vc <- tg[1:30,]$len
+oj <- tg[31:60,]$len
 
-difference <- oj$len - vc$len
+test_by_supp <- sapply(data.frame(vc, oj), function(x){
+    t.test(x)$conf.int
+})
 
-mn <- mean(difference)
-s <- sd(difference)
+colnames(test_by_supp) <- c("VC", "OC")
+rownames(test_by_supp) <- c("Lower", "Upper")
+test_by_supp
+```
 
-mn + c(-1, 1) * qt(0.975, n-1)*s/sqrt(n)
+Analysing based on **dose**
+```{r}
+dt_M <- data.frame(tg[1:10,]$len, tg[11:20,]$len, tg[21:30,]$len, tg[31:40,]$len, tg[41:50,]$len, tg[51:60,]$len)
 
-t.test(difference)
+test_result <- sapply(dt_M, function(x){
+    t.test(x)$conf.int
+})
 
-t.test(oj$len, vc$len, paired = TRUE)
+colnames(test_result) <- c("VC_0.5", "VC_1.0", "VC_2.0", "OJ_0.5", "OJ_1.0", "OJ_2.0")
+rownames(test_result) <- c("Lower", "Upper")
 
+test_result
 
 ```
