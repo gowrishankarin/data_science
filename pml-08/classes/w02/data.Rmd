@@ -1,0 +1,22 @@
+
+
+```{r}
+library(caret)
+library(kernlab)
+library(dplyr)
+data(spam)
+
+inTrain <- createDataPartition(y = spam$type, p = 0.75, list = FALSE)
+training <- spam[inTrain,]
+testing <- spam[-inTrain,]
+
+dim(training)
+
+folds <- createFolds(y = spam$type, k=10, list = TRUE, returnTrain = TRUE)
+sapply(folds, length)
+
+# Study CreateResample, CreateTimeSlices etc
+
+modelFit <- train(type ~., data = training, method = "glm")
+
+```
