@@ -56,23 +56,52 @@ which(M > 0.7, arr.ind = T)
 
 ```
 
-## Correlated Predictors
+### Correlated Predictors
 
 ```{r}
 names(IL_training)[c(6, 3)]
 plot(IL_training[,6], IL_training[, 3])
 ```
 
-## Rotate the plot
+### Rotate the plot
 
 ```{r}
-X <- 0.71 * IL_training$IL_3 + 0.71 * IL_training$IL_16
-Y <- 0.71 * IL_training$IL_3 - 0.71 * IL_training$IL_16
+
+scalee <- 0.90
+X <- scalee * IL_training$IL_3 + scalee * IL_training$IL_16
+Y <- scalee * IL_training$IL_3 - scalee * IL_training$IL_16
 plot(X, Y)
 ```
 
+### Principal Components in R - prcomp
+
+```{r}
+smallAlz <- IL_training[, c(6, 3)]
+prComp <- prcomp(smallAlz)
+plot(prComp$x[,1], prComp$x[,2])
+
+prComp$rotation
+```
+
+### PCA on Alzheimer Data
+
+```{r}
+preProc <- preProcess(IL_training, method="pca", thresh=0.9)
+predict(preProc)
+```
 
 
+```{r}
+
+
+IL_training$diagnosis <- training$diagnosis
+
+modelFit <- train(IL_training$diagnosis ~ .,method="glm",data=IL_training)
+confusionMatrix(testing$diagnosis,predict(modelFit,testing))
+
+preProc <- preProcess(IL_training, method="pca", thresh=0.8)
+predict(preProc)
+```
 
 
 
