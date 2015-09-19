@@ -36,9 +36,9 @@ n = 100
 
 ```{r}
 
-new_mu <- mean(rnorm(100, mean = 1100, sd = 75))
+new_mu <- mean((rnorm(100, mean = 1100, sd = 75))
 
-qnorm(0.95, mean = new_mu, sd = 75)
+qnorm(0.95, mean = 1100, sd = 75/sqrt(100))
 
 ```
 
