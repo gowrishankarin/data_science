@@ -1,0 +1,150 @@
+---
+title: "Systematic Analysis on GoT Battles"
+output: html_document
+---
+
+We all know [Game of Thrones](http://www.hbo.com/game-of-thrones) received widespread critical acclaim and season 4 was the best one to be aired since its start. Current season(as of 1st May 2016) did not acquire good ratings from the masses compare to all other past seasons. My personal feel is, this season is quite dark and slow moving. Even before the start of the season most of us 
+rightly predicted the [resurrection of Jon Snow](http://time.com/4135694/hbo-season-six-jon-snow-dead-resurrection/). The key thing which makes GoT differ from any other series is its unpredictable nature. Wrt Jon Snow, the makers and writers totally failed. 
+
+On the other hand, seing this dataset posted on Kaggle brought back quite a lot of excitement to me. Along with that 
+I would like to mention the exploratory analysis done by [Shail Jayesh Deliwala](https://www.kaggle.com/shaildeliwala/d/mylesoneill/game-of-thrones/exploratory-analysis) is truly awesome and inpired me to craft this analysis report. Although I tried my best to differ, there is definetely an impact of Shail's work in my analysis as well.
+
+```{r, echo = FALSE}
+library(ggplot2)
+library(plyr)
+```
+
+
+```{r, echo=FALSE}
+battles <- read.csv("../input/battles.csv", header=TRUE, stringsAsFactors=TRUE, na.strings=c("","NA", " "))
+deaths <- read.csv("../input/character-deaths.csv", header=TRUE, stringsAsFactors=TRUE, na.strings=c("","NA", " "))
+predictions <- read.csv("../input/character-predictions.csv", header=TRUE, stringsAsFactors=TRUE, na.strings=c("","NA", " "))
+
+```
+
+### Is Size of the Army Often Decides the Outcome of the Battle?
+
+Larger the size does not mean a guaranteed victory. For example, In Battle of Castle Black... Mance Rayder defeated Stannis Baratheon brutally. Stannis was marching with 100,000 soldiers and Mance Rayder was with less than 1500 member troop. 
+
+That is what the data tells but the [Battle of Castle Black](http://gameofthrones.wikia.com/wiki/Battle_of_Castle_Black) was won by Stannis Baratheon. Ramsay Bolton sets fire on Stannis' camp and leave him die with a meager force when he marches to Winterfell. So, Stannis lost to Bolton's army not my Mance Rayder. Eventually the Baratheon was killed by Brienne of Tarth
+
+[Death of Mance Rayder](https://www.youtube.com/watch?v=Cj6m_WTh5mo)
+
+[Death of Stannis Baratheon](https://www.youtube.com/watch?v=LAwRng7pom8)
+
+```{r, echo=FALSE, warning=FALSE, fig.width=10, fig.height=10}
+p <- ggplot(data = battles, aes(y = attacker_size, x = defender_size)) +
+    geom_smooth(method = "lm", se = F, fullrange = T, colour = "steelblue", size = 1) +
+    geom_smooth(method = "loess", formula = y ~ x, se = F, colour = "pink", size = 3) +
+    geom_point(aes(color=attacker_outcome)) + 
+    ggtitle("Attacker Size vs Defender Size on Outcome of the War") +
+    xlab("Defender Size") + ylab("Attacker Size")
+p
+```
+
+### Which King fought Maximum Number of Battles?
+
+Joffrey Baratheon, the most feared king fought the maximum number of battles. He never participated in a  battle directly but his brutal attitude and shocking decisions are unforgettable
+
+```{r, echo=FALSE, warning=FALSE, fig.width=10}
+
+g1 <- ggplot(aes(x = factor(attacker_king)), data = battles, fill=factor(attacker_king)) + 
+    geom_bar(aes(fill=factor(attacker_king)), width=1, colour="black") +
+    ggtitle("No of Battles by Attacker King") +
+    xlab("Attacker Kings") + ylab("No of Battles")
+print(g1)
+```
+
+### How the Commandars of the Attacking Kings have Performed?
+
+Looks like Gregor Clegane had faught most number of battles and won all of them for Joffrey. Who is this Gregor Clegane? I think one can forget Gregor Clegane but not the following dialogues
+```sh
+You raped Elia Martell!, You raped her!, You murdered her! and You killed her Children
+```
+[Death of Oberyn Martell](https://www.youtube.com/watch?v=nqT22PlqnUA)
+```sh
+Elia Martell! I killed her children! Then I raped her! Then I smashed her head...in like this!
+```
+```{r, echo=FALSE, warning=FALSE, fig.width=10, fig.height=10}
+p <- ggplot(data = battles, aes(x = factor(attacker_commander), fill=attacker_outcome)) +
+    geom_bar(aes(fill=factor(attacker_outcome)), width=1, colour="black") +
+    facet_wrap(~ attacker_king) + coord_flip() +
+    ggtitle("Attacker Kings and Their Commanders") +
+    xlab("Attacker Kings") + ylab("No of Battles")
+print(p)
+```
+
+### What are the Different Types of Battles fought and what their counts are?
+```sh
+Except "razing" the types of battle counts are almost equal.
+```
+```{r, echo=FALSE, fig.width=10}
+g2 <- ggplot(aes(x = factor(battle_type)), data = battles) + 
+    geom_bar(aes(fill=factor(battle_type)), width=1, colour="black") +
+    ggtitle("Battle Type") +
+    xlab("Battle Type") + ylab("No of Battles")
+print(g2)
+```
+
+### In Which Regions Battles were Faught, Who were all the attackers?
+
+According to the data all the kings faught in The North. Joffrey faught most of his battles in The Riverlands.
+Joffrey's fights are mainly to defend the Kings Landing because the The Riverlands are Between Everything and Everything Else
+
+[More about The Riverlands](https://www.youtube.com/watch?v=T2JJ-KUZbOI)
+
+```{r, echo=FALSE, fig.width=10}
+p <- ggplot(data = battles, aes(x = factor(attacker_king), fill=attacker_outcome)) +
+    geom_bar(aes(fill=factor(attacker_king)), width=1, colour="black") +
+    facet_wrap(~ region) + coord_flip() +
+    ggtitle("Regions and Battles") +
+    xlab("Attacker Kings") + ylab("No of Battles")
+print(p)
+```
+
+### Type of Battles and The Attacker Kings
+
+Stannis Baratheon had the largest army among all other Kings. He never need have an ambush, on the other hand Robb Stark was slowly building his place in the history. Data proves he ambushed most of the time and acquired his army before his bloody deathy during Red Wedding.
+
+[The Rise of Robb Stark](https://www.youtube.com/watch?v=3TXY_mK88Ns)
+```sh
+Tyrion to Cersei: Who has won every battle he faught. Do you undertand we are loosing the war.
+```
+```{r, echo=FALSE, fig.width=10}
+p <- ggplot(data = battles, aes(x = factor(attacker_king), fill=attacker_outcome)) +
+    geom_bar(aes(fill=factor(attacker_king)), width=1, colour="black") +
+    facet_wrap(~ battle_type) + coord_flip() +
+    ggtitle("Types of Battles and Attacker Kings") +
+    xlab("Attacker Kings") + ylab("No of Battles")
+
+print(p)
+```
+
+### Kings vs Kings
+
+Joffrey had faught agains almost all other kings except the wildlings. He was quite far from The Wall and there is no need for him to cross the wall. However, Robb Stark was quite focussed... His quest was to take revenge on his old friends the heirs of Robert Baratheon who kill his father Ned Stark.
+
+[Why Robb Stark Faught the Battles](https://www.youtube.com/watch?v=PW6wfXPeJTw)
+
+```{r, echo=FALSE, fig.width=10}
+p <- ggplot(data = battles, aes(x = factor(defender_king), fill=attacker_outcome)) +
+    geom_bar(aes(fill=factor(attacker_outcome)), width=1, colour="black") +
+    facet_wrap(~ attacker_king) + coord_flip() +
+    ggtitle("Attacker Kings vs Defender Kings") +
+    xlab("Defender Kings") + ylab("No of Battles")
+
+print(p)
+```
+
+### Kings and Their Army Strength
+
+
+```{r, echo=FALSE, fig.width=10}
+p <- ggplot(data = battles, aes(x = factor(attacker_size))) +
+    geom_bar(aes(fill=factor(attacker_size)), width=1, colour="black") +
+    facet_wrap(~ attacker_king) + coord_flip() +
+    ggtitle("Kings and Their Army Strength") +
+    xlab("Army Strength") + ylab("No of Battles")
+
+print(p)
+```
