@@ -1,0 +1,106 @@
+
+```{r}
+load(url("http://www.openintro.org/stat/data/ames.RData"))
+
+area <- ames$Gr.Liv.Area
+price <- ames$SalePrice
+
+summary(area)
+hist(area)
+
+```
+
+# The 'ames' data frame and 'area' and 'price' objects are already loaded into the workspace
+
+# Set up an empty vector of 5000 NAs to store sample means:
+
+```{r}
+sample_means50 <- rep(NA, 5000)
+
+# Take 5000 samples of size 50 of 'area' and store all of them in 'sample_means50'.
+for (i in 1:5000) {
+    samp <- sample(area, 50)
+	sample_means50[i] <- mean(samp)
+}
+
+# View the result. If you want, you can increase the bin width to show more detail by changing the 'breaks' argument.
+hist(sample_means50, breaks = 13)
+```
+
+
+```{r}
+
+
+# The 'ames' data frame and 'area' and 'price' objects are already loaded into the workspace
+
+# Initialize the sample distributions:
+sample_means10 <- rep(NA, 5000)
+sample_means100 <- rep(NA, 5000)
+sample_means300 <- rep(NA, 5000)
+
+# Run the for loop:
+for (i in 1:5000) {
+    samp <- sample(area, 10)
+	sample_means10[i] <- mean(samp)
+	samp <- sample(area, 100)
+	sample_means100[i] <- mean(samp)
+    samp <- sample(area, 300)
+	sample_means300[i] <- mean(samp)
+}
+
+# Take a look at the results:
+head(sample_means10)
+head(sample_means50) # was already loaded
+head(sample_means100)
+head(sample_means300)
+```
+
+
+```{r}
+# The sample distributions are already loaded into the workspace
+
+# Divide the plot in 3 rows:
+par(mfrow = c(4, 1))
+
+# Define the limits for the x-axis:
+xlimits <- range(sample_means10)
+
+# Draw the histograms:
+hist(sample_means10, breaks = 20, xlim = xlimits)
+hist(sample_means50, breaks = 20, xlim = xlimits)
+hist(sample_means100, breaks = 20, xlim = xlimits)
+hist(sample_means300, breaks = 20, xlim = xlimits)
+```
+
+```{r}
+sample_means_price50 <- rep(NA, 5000)
+sample_means_price150 <- rep(NA, 5000)
+
+# Run the for loop:
+for (i in 1:5000) {
+    samp <- sample(price, 50)
+    sample_means_price50[i] <- mean(samp)
+	samp <- sample(price, 150)
+	sample_means_price150[i] <- mean(samp)
+}
+# Divide the plot in 3 rows:
+par(mfrow = c(4, 1))
+
+# Define the limits for the x-axis:
+xlimits <- range(sample_means_price50)
+
+# Take a look at the results:
+hist(sample_means_price50, breaks = 20, xlim = xlimits)
+hist(sample_means_price150, breaks = 20, xlim = xlimits)
+
+```
+
+
+
+
+
+
+
+
+
+
