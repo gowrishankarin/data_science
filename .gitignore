@@ -8,3 +8,4 @@
 .httr-oauth
 *.jpg
 *.rds
+.ipynb_checkpoints
