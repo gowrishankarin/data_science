@@ -9,3 +9,5 @@
 *.jpg
 *.rds
 .ipynb_checkpoints
+*.pkl
+SavedModels
