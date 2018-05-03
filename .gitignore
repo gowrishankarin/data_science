@@ -10,5 +10,8 @@
 *.rds
 .ipynb_checkpoints
 *.pkl
+__pycache__
+*.__pycache__
+.DS_Store
 SavedModels
 node_modules
