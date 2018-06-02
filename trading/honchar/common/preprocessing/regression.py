@@ -1,11 +1,12 @@
+import numpy as np
 
-def Regression():
+class Regression():
     def __init__(self, multivariate=False):
         self.multivariate = multivariate
         self.X = []
         self.y = []
         
-    def preprocessor_multi(data):
+    def preprocessor_multi(self, data, WINDOW, STEP, FORECAST):
         openp = data.loc[:, 'Open'].tolist()
         highp = data.loc[:, 'High'].tolist()
         lowp = data.loc[:, 'Low'].tolist()
@@ -29,29 +30,21 @@ def Regression():
                 x_i = closep[i: i + WINDOW]
                 y_i = closep[i + WINDOW + FORECAST]
 
-                last_close = x_i[-1]
-                next_close = y_i
-
-                if last_close < next_close:
-                    y_i = [1, 0]
-                else:
-                    y_i = [0, 1]
-
                 x_i = np.column_stack((o, h, l, c, v))
             except Exception as e:
                 print(str(e))
                 break
             
             self.X.append(x_i)
-            self.Y.append(y_i)
+            self.y.append(y_i)
             
-    def preprocessor_uni(data):
+    def preprocessor_uni(self, data, WINDOW, STEP, FORECAST):
         return
         
-    def preprocess(data):
+    def preprocess(self, data, WINDOW, STEP, FORECAST):
         if(self.multivariate == True):
-            self.preprocessor_multi(data)
+            self.preprocessor_multi(data, WINDOW, STEP, FORECAST)
         else:
-            self.preprocessor_uni(data)
+            self.preprocessor_uni(data, WINDOW, STEP, FORECAST)
             
-        return self.X, self.Y
+        return np.array(self.X), np.array(self.y)
