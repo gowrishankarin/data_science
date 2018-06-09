@@ -1,2 +1,3 @@
 from .hnetclassification import HNetClassification
 from .hnetregression import HNetRegression
+from .hnet2layerregression import HNet2LayerRegression
