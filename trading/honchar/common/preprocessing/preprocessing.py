@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 def shuffle_in_unison(a, b):
     # courtsey http://stackoverflow.com/users/190280/josh-bleecher-snyder
@@ -28,3 +29,10 @@ def split_train_test_in_unison(X, y, percentage=0.8):
     Y_test = y[split:]
     
     return X_train, X_test, Y_train, Y_test
+
+def data_2_percentage_change(data):
+    change = pd.DataFrame(data).pct_change()
+    change = change.replace([np.inf, -np.inf], np.nan)
+    change = change.fillna(0.0).values.tolist()
+    change = [c[0] for c in change]
+    return change
