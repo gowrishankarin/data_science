@@ -11,7 +11,8 @@ class HDF5DatasetWriter():
         # Open the HDF5 database for writing and create two datasets: One to
         # store the images/features and another to store the class labels
         self.db = h5py.File(outputPath, "w")
-        self.data = self.db.create_dataset("labels", (dims[0],), dtype="int")
+        self.data = self.db.create_dataset(dataKey, dims, dtype="float")
+        self.labels = self.db.create_dataset("labels", (dims[0],), dtype="int")
         
         # Store the buffer size, then initialize the buffer itself along with the index
         # into the datasets
@@ -32,7 +33,8 @@ class HDF5DatasetWriter():
     def flush(self):
         # Write the buffers to disk then reset the buffer
         i = self.idx + len(self.buffer["data"])
-        self.data[self.idx:i] = self.buffer["labels"]
+        self.data[self.idx:i] = self.buffer["data"]
+        self.labels[self.idx:i] = self.buffer["labels"]
         self.idx = i
         self.buffer = {"data": [], "labels": []}
         
