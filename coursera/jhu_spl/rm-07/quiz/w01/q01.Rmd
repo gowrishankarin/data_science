@@ -1,0 +1,212 @@
+```{r setup, cache = F, echo = F, message = F, warning = F, tidy = F, results='hide'}
+library(UsingR)
+library(manipulate)
+```
+
+## Least Square Equation
+
+Consider the data set given below
+
+x <- c(0.18, -1.54, 0.42, 0.95)
+
+and weights given by
+
+w <- c(2, 1, 3, 1)
+
+Give the value of 'mu' that minimizes the least squares equation 
+
+SUM(w*(x - mu)^2)
+
+
+```{r}
+mse = sapply(c(0.0025, 1.077, 0.3, 0.1471), function(mu) {
+    x <- c(0.18, -1.54, 0.42, 0.95)
+    w <- c(2, 1, 3, 1)
+    mse <- sum(w*(x - mu)^2)
+    return(mse)
+})
+mse
+```
+
+## Regression through Origin
+Consider the following data set
+
+x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)
+
+y <- c(1.39, 0.72, 1.55, 0.48, 1.19, -1.59, 1.23, -0.65, 1.49, 0.05)
+
+Fit the regression through the origin and get the slope treating y as the
+the outcome and x as the regressor. (Hint, do not center the data since 
+we want regression through the origin, not through the means of the data)
+
+```{r}
+x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)
+y <- c(1.39, 0.72, 1.55, 0.48, 1.19, -1.59, 1.23, -0.65, 1.49, 0.05)
+
+fit <- lm(y ~ x - 1)
+summary(fit)
+``` 
+
+### Plot and find beta using manipulate
+
+```{r}
+x1 <- x - mean(x)
+y1 <- y - mean(y)
+freqData <- as.data.frame(table(x1, y1))
+names(freqData) <- c("x", "y", "freq")
+freqData$x <- as.numeric(as.character(freqData$x))
+freqData$y <- as.numeric(as.character(freqData$y))
+myPlot <- function(beta){
+    g <- ggplot(filter(freqData, freq > 0), aes(x = y, y = x))
+    g <- g  + scale_size(range = c(2, 20), guide = "none" )
+    g <- g + geom_point(colour="grey50", aes(size = freq+20, show_guide = FALSE))
+    g <- g + geom_point(aes(colour=freq, size = freq))
+    g <- g + scale_colour_gradient(low = "lightblue", high="white")                     
+    g <- g + geom_abline(intercept = 0, slope = beta, size = 3)
+    mse <- mean( (y1 - beta * x1) ^2 )
+    g <- g + ggtitle(paste("beta = ", beta, "mse = ", round(mse, 3)))
+    g
+}
+# manipulate(myPlot(beta), beta = slider(-2, 0, step = 0.1))
+```
+
+### Verify the result with options
+```{r}
+mse1 = sapply(c(-0.04462, 0.8263, -1.713, 0.59915), function(beta) {
+    mse <- mean((y1 - x1*beta)^2)
+    return(mse)
+})
+mse1
+```
+
+## Predict through Fitting a Regression Model
+
+Do data(mtcars) from the datasets package and fit the regression model with mpg as the outcome and weight as the predictor. Give the slope coefficient.
+
+```{r}
+head(mtcars, 3)
+lm(I(mpg - mean(mpg)) ~ I(wt - mean(wt)) - 1, mtcars)
+```
+
+
+## Q4 
+Consider data with an outcome (Y) and a predictor (X). The standard deviation of the predictor is one half that of the outcome. The correlation between the two variables is .5. What value would the slope coefficient for the regression model with Y as the outcome and X as the predictor?
+
+Outcome = Y
+
+Predictor = X
+
+Sd(x) = Sd(y)/2 ==> Sd(y)/Sd(x) = 2
+
+Cor(y, x) = 0.5
+
+y = β0 + β1.X
+β1 = Cor(Y, X).Sd(y)/Sd(x)
+
+β1 = 0.5 * 2  = 1
+
+
+## Q5
+Students were given two hard tests and scores were normalized to have empirical mean 0 and variance 1. The correlation between the scores on the two tests was 0.4. What would be the expected score on Quiz 2 for a student who had a normalized score of 1.5 on Quiz 1?
+
+beta_1 = cor(Q1, Q2)*(sd_Q2/sd_Q1)
+
+beta_0 = mean(Q2) - beta_1*mean(Q1)
+
+```{r}
+emp_mean = 0
+variance = 1
+sd_Q1 = 1
+sd_Q2 = 1
+corr = 0.4
+beta_0 = 0
+mean_Q1 = 1.5
+beta_1 = corr * (1/1) 
+mean_Q2 = beta_1 * mean_Q1
+```
+
+## Q6
+Consider the data given by the following
+
+x <- c(8.58, 10.46, 9.01, 9.64, 8.86)
+What is the value of the first measurement if x were normalized (to have mean 0 and variance 1)?
+
+```{r}
+x <- c(8.58, 10.46, 9.01, 9.64, 8.86)
+
+(x - mean(x))/sd(x)
+```
+
+## Q7
+Consider the following data set (used above as well). What is the intercept for fitting the model with x as the predictor and y as the outcome?
+
+x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)
+y <- c(1.39, 0.72, 1.55, 0.48, 1.19, -1.59, 1.23, -0.65, 1.49, 0.05)
+
+```{r}
+x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)
+y <- c(1.39, 0.72, 1.55, 0.48, 1.19, -1.59, 1.23, -0.65, 1.49, 0.05)
+
+fit <- lm(y ~ x)
+predict(fit)
+
+summary(fit)
+```
+
+## Q8
+You know that both the predictor and response have mean 0. What can be said about the intercept when you fit a linear regression?
+
+Nothing about the intercept can be said from the information given.
+It must be identically 0.
+It must be exactly one.
+It is undefined as you have to divide by zero.
+
+y_bar = β0 + β1.x_bar
+y_bar = x_bar = 0 (ie predictor and response mean is zero)
+
+0 = β0 + β1.0
+therefore β0 = 0
+
+## Q9
+Consider the data given by
+
+x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)
+What value minimizes the sum of the squared distances between these points and itself?
+
+```{r}
+    x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)
+
+mean(x)
+
+```
+
+
+## Q10
+
+Let the slope having fit Y as the outcome and X as the predictor be denoted as β1. Let the slope from fitting X as the outcome and Y as the predictor be denoted as γ1. Suppose that you divide β1 by γ1; in other words consider β1/γ1. What is this ratio always equal to?
+
+
+```{r}
+x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)
+
+y <- c(1.39, 0.72, 1.55, 0.48, 1.19, -1.59, 1.23, -0.65, 1.49, 0.05)
+
+beta1 = lm(I(y - mean(y)) ~ I(x - mean(x)))
+gamma1 = lm(I(x - mean(x)) ~ I(y - mean(y)))
+
+beta1$coefficients[2]/gamma1$coefficients[2]
+
+var(y)/var(x)
+
+2*sd(y)/sd(x)
+
+cor(y, x)
+
+```
+
+
+
+
+
+
+

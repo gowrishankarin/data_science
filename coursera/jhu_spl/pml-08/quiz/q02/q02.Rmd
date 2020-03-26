@@ -1,0 +1,108 @@
+
+
+## Alzheimer Disease Data
+
+```{r}
+library(AppliedPredictiveModeling)
+library(caret)
+data(AlzheimerDisease)
+
+
+adData = data.frame(diagnosis, predictors)
+trainIndex = createDataPartition(diagnosis, p = 0.5, list = FALSE)
+
+training = adData[trainIndex,]
+testing = adData[-trainIndex,]
+
+```
+
+## Cement Data
+
+```{r}
+library(AppliedPredictiveModeling)
+data(concrete)
+library(caret)
+set.seed(1000)
+
+inTrain = createDataPartition(mixtures$CompressiveStrength, p = 3/4)[[1]]
+training = mixtures[inTrain,]
+testing = mixtures[-inTrain,]
+
+ggplot(data = training, aes(x = Superplasticizer)) + 
+    geom_histogram(aes(y = ..density..), fill = I('#aaccff'), color = I('blue')) 
+
+sd(training$Superplasticizer)
+
+```
+
+## Alzheimer Disease
+
+```{r}
+set.seed(3433)
+adData = data.frame(diagnosis, predictors)
+trainIndex = createDataPartition(diagnosis, p = 3/4)[[1]]
+
+training = adData[trainIndex,]
+testing = adData[-trainIndex,]
+
+IL_training = training[,58:69]
+IL_testing = testing[,58:69]
+
+M <- abs(cor(IL_training))
+diag(M) <- 0
+
+which(M > 0.7, arr.ind = T)
+
+
+```
+
+### Correlated Predictors
+
+```{r}
+names(IL_training)[c(6, 3)]
+plot(IL_training[,6], IL_training[, 3])
+```
+
+### Rotate the plot
+
+```{r}
+
+scalee <- 0.90
+X <- scalee * IL_training$IL_3 + scalee * IL_training$IL_16
+Y <- scalee * IL_training$IL_3 - scalee * IL_training$IL_16
+plot(X, Y)
+```
+
+### Principal Components in R - prcomp
+
+```{r}
+smallAlz <- IL_training[, c(6, 3)]
+prComp <- prcomp(smallAlz)
+plot(prComp$x[,1], prComp$x[,2])
+
+prComp$rotation
+```
+
+### PCA on Alzheimer Data
+
+```{r}
+preProc <- preProcess(IL_training, method="pca", thresh=0.9)
+predict(preProc)
+```
+
+
+```{r}
+
+
+IL_training$diagnosis <- training$diagnosis
+
+modelFit <- train(IL_training$diagnosis ~ .,method="glm",data=IL_training)
+confusionMatrix(testing$diagnosis,predict(modelFit,testing))
+
+preProc <- preProcess(IL_training, method="pca", thresh=0.8)
+predict(preProc)
+```
+
+
+
+
