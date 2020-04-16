@@ -1,0 +1,99 @@
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+        <script lang="js">
+            async function run() {
+                const trainingUrl = 'wdbc-train.csv';
+                const trainingData = tf.data.csv(
+                    trainingUrl, {
+                        columnConfigs: {
+                            diagnosis: {
+                                isLabel: true
+                            }
+                        }
+                    }
+                );
+
+                const testingUrl = 'wdbc-test.csv';
+                const testingData = tf.data.csv(
+                    testingUrl, {
+                        columnConfigs: {
+                            diagnosis: {
+                                isLabel: true
+                            }
+                        }
+                    }
+                );                
+                const numOfFeatures = (await trainingData.columnNames()).length - 1;
+                const numOfSamples = 150;
+                const convertedTrainingData = trainingData.map(({
+                    xs, ys
+                }) => {
+                    const labels = [
+                        ys.diagnosis == 1 ? 1 : 0,
+                        ys.diagnosis == 0 ? 0 : 1
+                    ]
+                    return {
+                        xs: Object.values(xs),
+                        ys: Object.values([ys.diagnosis])
+                    };
+                }).batch(10);
+
+                const convertedTestingingData = testingData.map(({
+                    xs, ys
+                }) => {
+                    const labels = [
+                        ys.diagnosis == 1 ? 1 : 0,
+                        ys.diagnosis == 0 ? 0 : 1
+                    ]
+                    return {
+                        xs: Object.values(xs),
+                        ys: Object.values([ys.diagnosis])
+                    };
+                }).batch(10);
+
+                const model = tf.sequential();
+                model.add(tf.layers.dense({
+                    inputShape: [numOfFeatures], activation: "relu", units: 128
+                }));                
+                model.add(tf.layers.dense({
+                    activation: "relu", units: 128
+                }));
+                model.add(tf.layers.dense({
+                    activation: "relu", units: 64
+                }));
+                model.add(
+                    tf.layers.dense({
+                        activation: "sigmoid", units: 1
+                    })
+                );
+                model.compile({
+                    loss: "binaryCrossentropy", 
+                    optimizer: tf.train.rmsprop(0.06), 
+                    metrics: ['accuracy']
+                });
+
+                console.log("Before Training");
+
+                await model.fitDataset(convertedTrainingData, {
+                    epochs: 100,
+                    validationData: convertedTestingingData,
+                    callbacks: {
+                        onEpochEnd: async(epoch, logs) => {
+                            console.log(`Epoch: ${epoch}, Loss: ${logs.loss}, Accuracy: ${logs.acc}`);
+                        }
+                    }
+                });
+
+                await model.save('downloads://my_model');
+
+                // Setosa
+                
+            }
+            run();    
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>
