@@ -1,4 +1,4 @@
-import {MnistData} from './data.js';
+import { FMnistData } from './fashion-data.js';
 var canvas, ctx, saveButton, clearButton;
 var pos = {
     x:0, y:0
@@ -37,16 +37,6 @@ function getModel() {
     );
     model.add(
         tf.layers.dense({
-            units: 512, activation: 'relu'
-        })
-    );
-    model.add(
-        tf.layers.dense({
-            units: 256, activation: 'relu'
-        })
-    );
-    model.add(
-        tf.layers.dense({
             units: 128, activation: 'relu'
         })
     );
@@ -67,12 +57,12 @@ function getModel() {
 async function train(model, data) {
     const metrics = ['loss', 'val_loss', 'accuracy', 'val_accuracy'];
     const container = {
-        name: 'Model Training', styles: { height: '640px' }
+        name: 'Model Training', styles: { height: '1000px' }
     };
     const fitCallbacks = tfvis.show.fitCallbacks(container, metrics);
 
     const BATCH_SIZE = 512;
-    const TRAIN_DATA_SIZE = 5500;
+    const TRAIN_DATA_SIZE = 6000;
     const TEST_DATA_SIZE = 1000;
 
     const [trainXs, trainYs] = tf.tidy(() => {
@@ -123,7 +113,7 @@ function draw(e) {
 
 function erase() {
     ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, 280, 280);
+    ctx.fillRect(0,0,280,280);
 }
 
 function save() {
@@ -134,7 +124,13 @@ function save() {
     var prediction = model.predict(tensor);
     var pIndex = tf.argMax(prediction, 1).dataSync();
 
-    console.log(pIndex);
+    var classNames = [
+        "T-shirt/top", "Trouser", "Pullover", 
+        "Dress", "Coat", "Sandal", "Shirt",
+        "Sneaker",  "Bag", "Ankle boot"
+    ];
+
+    console.log(classNames[pIndex]);
 }
 
 function init() {
@@ -154,8 +150,9 @@ function init() {
     clearButton.addEventListener("click", erase);
 }
 
+
 async function run() {
-    const data = new MnistData();
+    const data = new FMnistData();
     await data.load();
     const model = getModel();
     tfvis.show.modelSummary({
@@ -163,6 +160,7 @@ async function run() {
     }, model);
 
     await train(model, data);
+    await model.save('downloads://my_model');
     init();
     alert("Training is done, try classifying your handwriting!");
 }
