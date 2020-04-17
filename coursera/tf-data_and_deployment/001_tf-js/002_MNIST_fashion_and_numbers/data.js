@@ -13,7 +13,7 @@ const MNIST_LABELS_PATH =
     'https://storage.googleapis.com/learnjs-data/model-builder/mnist_labels_uint8';
 
 export class MnistData {
-    contructor() {
+    constructor() {
         this.shuffledTrainIndex = 0;
         this.shuffledTestIndex = 0;
     }
