@@ -23,7 +23,18 @@ node_modules
 *.tflite
 *.gz
 *.json
-
+*.png
+*.model
+*.idx
+variables.data*
+*.tfrecord*
+*.ckpt*
+ipynb_checkpoints
+checkpoint
+*.bin
+*.h5
+*.weights
+*.jpeg
 
 ## The .gitignore file specifies things that git should ignore. 
 ## This default template includes entries for R, Python and visual studio
