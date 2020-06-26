@@ -67,3 +67,86 @@ def build_freqs(tweets, ys):
                 freqs[pair] = 1
 
     return freqs
+
+import matplotlib.transforms as transforms
+from matplotlib.patches import Ellipse
+
+def confidence_ellipse(x, y, ax, n_std=3.0, facecolor='none', **kwargs):
+    """
+    Create a plot of the covariance confidence ellipse of x and y 
+    Parameters
+    ----------
+    x, y: array_like, shape (n, )
+    ax: matplotlib.axes.Axes
+        The axes object to draw the ellipse into.
+    n_std : float
+        The number of std to determine the ellipse's radiuses
+        
+    Returns
+    -------
+    matplotlib.patches.Ellipse
+    
+    Other Parameters
+    ----------------
+    kwargs : `~matplotlib.patches.Patch` properties
+    """
+    if(x.size != y.size):
+        raise ValueError("x and y must be the same size")
+        
+    cov = np.cov(x, y)
+    pearson = cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])
+    
+    # Using a special case to obtain the eigenvalues of thei 2D dataset
+    ell_radius_x = np.sqrt(1 + pearson)
+    ell_radius_y = np.sqrt(1 - pearson)
+    ellipse = Ellipse(
+        (0, 0),
+        width=ell_radius_x * 2,
+        height=ell_radius_y * 2,
+        facecolor=facecolor,
+        **kwargs
+    )
+    # Calculating the STD of x from the square root of the variance
+    # and multiplying with the given number of STD
+    scale_x = np.sqrt(cov[0, 0]) * n_std
+    mean_x = np.mean(x)
+    
+    # Calculating the sTD of y
+    scale_y = np.sqrt(cov[1, 1]) * n_std
+    mean_y = np.mean(y)
+    
+    transf = transforms.Affine2D().rotate_deg(45) \
+        .scale(scale_x, scale_y) \
+        .translate(mean_x, mean_y)
+    
+    ellipse.set_transform(transf + ax.transData)
+    return ax.add_patch(ellipse)
+
+def lookup(freqs, word, label):
+    """
+    Input: 
+        freqs: a dict with the frequency of each pair(or tuple)
+        word: the word to look up
+        label: the labe corresponding to the word
+    Output:
+        n: The number of times the word with its corresponding label appears
+    """
+    n = 0
+    
+    pair = (word, label)
+    if(pair in freqs):
+        n = freqs[pair]
+    
+    return n
+
+def test_lookup(func):
+    freqs = {('sad', 0): 4,
+             ('happy', 1): 12,
+             ('oppressed', 0): 7}
+    
+    word = 'happy'
+    label = 1
+    if(func(freqs, word, label) == 12):
+        return 'SUCCESS!!'
+    
+    return 'Failed Sanity Check'
