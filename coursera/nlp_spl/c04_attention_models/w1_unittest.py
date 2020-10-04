@@ -141,7 +141,7 @@ def test_pre_attention_decoder_fn(pre_attention_decoder_fn):
     success = 0
     fails = 0
     
-    mode = 1
+    mode = 'train'
     target_vocab_size = 10
     d_model = 2
     
@@ -472,7 +472,7 @@ def test_rouge1_similarity(rouge1_similarity):
                 assert abs(test_case["expected"] -target(*test_case['input'])) < 1e-6
                 success += 1
         except:
-            print(test_case['error'])
+            print(test_case['input'], test_case['error'])
             fails += 1
             
     if fails == 0:
