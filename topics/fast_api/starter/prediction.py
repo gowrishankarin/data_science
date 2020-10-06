@@ -8,38 +8,52 @@ from tensorflow.keras.applications.imagenet_utils import decode_predictions
 
 input_shape = (224, 224)
 
+model = None
+
 def load_model():
     model = tf.keras.applications.MobileNetV2(weights="imagenet")
     print("Model Loaded")
     return model
 
-model = load_model()
 
-def read_image(image_encoded):
-    pil_image = Image.open(BytesIO(image_encoded))
+
+def read_image(file) -> Image.Image:
+    print("Reading the image")
+    pil_image = Image.open(BytesIO(file))
     return pil_image
 
 def preprocess(image: Image.Image):
+    print("Preprocessing the Image")
     image = image.resize(input_shape)
-    image = np.asfarray(image)
-    image = image / 255.0
+    image = np.asarray(image)[..., :3]
+    
     
     image = np.expand_dims(image , 0)
+    image = image / 127.5 - 1.0
     
     return image
 
-def predict(image: np.ndarray):
+def predict(image: Image.Image):
+    
+    global model
+    if(model is None):
+        model = load_model()
+    
+    # Step 2: Preprocess the images
+    image = preprocess(image)
+
     predictions = model.predict(image)
     
-    result = decode_predictions(model.predict(image), 2)[0]
+    results = decode_predictions(predictions, 2)[0]
     
-    response = []
-    for i, res in enumerate(result):
-        response = {}
-        response['class'] = res[1]
-        response['confidence'] = f'{res[2] * 100:0.2f}'
+    response = {}
+    for i, res in enumerate(results):
+        result = {}
+        result['class'] = res[1]
+        result['confidence'] = f'{res[2] * 100:0.2f}'
         
-        response.append(resp)
+        response[i] = result
         
+    print(response)   
     return response
     
