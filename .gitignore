@@ -23,7 +23,7 @@ node_modules
 *.tflite
 *.gz
 *.json
-*.png
+# *.png
 *.model
 *.idx
 variables.data*
