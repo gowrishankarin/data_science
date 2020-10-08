@@ -11,8 +11,10 @@ input_shape = (224, 224)
 model = None
 
 def load_model():
-    model = tf.keras.applications.MobileNetV2(weights="imagenet")
-    print("Model Loaded")
+    global model;
+    if(model is None):
+        model = tf.keras.applications.MobileNetV2(weights="imagenet")
+        print("Model Loaded")
     return model
 
 
@@ -35,11 +37,8 @@ def preprocess(image: Image.Image):
 
 def predict(image: Image.Image):
     
-    global model
-    if(model is None):
-        model = load_model()
+    model = load_model()
     
-    # Step 2: Preprocess the images
     image = preprocess(image)
 
     predictions = model.predict(image)
