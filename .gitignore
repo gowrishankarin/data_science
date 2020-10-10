@@ -506,3 +506,5 @@ junit/
 **/*.pos
 **/*.subword
 **/*.p
+**/*.words
+**/*.trace
