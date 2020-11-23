@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
+from flask_restful import Api, Resource
 
 app = Flask(__name__)
+api = Api(app)
 
 @app.route('/')
 def hello_world():
@@ -28,6 +30,116 @@ def add_two_nums():
     return jsonify({
         "z":z
     }), 200
+
+
+def validate_input(posted_data, method_name):
+    if(method_name == 'Add' or 'Multiply' or 'Divide' or 'Subtract'):
+        if('x' not in posted_data or 'y' not in posted_data):
+            return 301
+        else:
+            return 200
+
+class Add(Resource):
+    def post(self):
+        posted_data = request.get_json()
+
+        status_code = validate_input(posted_data, 'Add')
+        if(status_code != 200):
+            return jsonify({
+            "Message": "Input Error",
+            "Status Code": status_code
+        })
+
+        # Add x and y
+        x = posted_data["x"]
+        y = posted_data["y"]
+        z = int(x) + int(y)
+        # Prepare a json
+
+        return jsonify({
+            "Message":z,
+            "Status Code": status_code
+        })#, 200
+
+    def get(self):
+        pass
+    def put(self):
+        pass
+    def delete(self):
+        pass
+
+
+class Subtract(Resource):
+    def post(self):
+        posted_data = request.get_json()
+
+        status_code = validate_input(posted_data, 'Subtract')
+        if(status_code != 200):
+            return jsonify({
+            "Message": "Input Error",
+            "Status Code": status_code
+        })
+
+        # Add x and y
+        x = posted_data["x"]
+        y = posted_data["y"]
+        z = int(x) - int(y)
+        # Prepare a json
+
+        return jsonify({
+            "Message":z,
+            "Status Code": status_code
+        })#, 200
+
+class Multiply(Resource):
+    def post(self):
+        posted_data = request.get_json()
+
+        status_code = validate_input(posted_data, 'Multiply')
+        if(status_code != 200):
+            return jsonify({
+            "Message": "Input Error",
+            "Status Code": status_code
+        })
+
+        # Add x and y
+        x = posted_data["x"]
+        y = posted_data["y"]
+        z = int(x) * int(y)
+        # Prepare a json
+
+        return jsonify({
+            "Message":z,
+            "Status Code": status_code
+        })#, 200
+
+class Divide(Resource):
+    def post(self):
+        posted_data = request.get_json()
+
+        status_code = validate_input(posted_data, 'Divide')
+        if(status_code != 200):
+            return jsonify({
+            "Message": "Input Error",
+            "Status Code": status_code
+        })
+
+        # Add x and y
+        x = posted_data["x"]
+        y = posted_data["y"]
+        z = int(x) / int(y)
+        # Prepare a json
+
+        return jsonify({
+            "Message":z,
+            "Status Code": status_code
+        })#, 200
+
+
+api.add_resource(Add, '/add')
+api.add_resource(Subtract, '/sub')
+api.add_resource(Multiply, '/mul')
+api.add_resource(Divide, '/div')
 
 if __name__ == "__main__":
         app.run()
