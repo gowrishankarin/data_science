@@ -1,0 +1,19 @@
+name: flask-mini
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - aniso8601=8.0.0=py_0
+  - click=7.1.2=pyh9f0ad1d_0
+  - flask=1.1.2=pyh9f0ad1d_0
+  - flask-restful=0.3.8=py_0
+  - itsdangerous=1.1.0=py_0
+  - jinja2=2.11.2=pyh9f0ad1d_0
+  - pip=20.2.4=py_0
+  - python-dateutil=2.8.1=py_0
+  - python_abi=3.9=1_cp39
+  - pytz=2020.4=pyhd8ed1ab_0
+  - six=1.15.0=pyh9f0ad1d_0
+  - tzdata=2020d=h516909a_0
+  - werkzeug=1.0.1=pyh9f0ad1d_0
+  - wheel=0.35.1=pyh9f0ad1d_0
