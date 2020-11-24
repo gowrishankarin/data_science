@@ -33,8 +33,17 @@ def add_two_nums():
 
 
 def validate_input(posted_data, method_name):
-    if(method_name == 'Add' or 'Multiply' or 'Divide' or 'Subtract'):
+    print(posted_data)
+    if((method_name == 'Add') or (method_name == 'Multiply') or (method_name == 'Subtract')):
         if('x' not in posted_data or 'y' not in posted_data):
+            return 301
+        else:
+            return 200
+    
+    if(method_name == 'Divide'):
+        if('x' not in posted_data or 'y' not in posted_data):
+            return 301
+        elif(int(posted_data['y']) == 0):
             return 301
         else:
             return 200
