@@ -508,3 +508,8 @@ junit/
 **/*.p
 **/*.words
 **/*.trace
+**/*.vocab
+**/*.pth
+**/*.pt
+**/*-ubyte
+**/*.subwords
