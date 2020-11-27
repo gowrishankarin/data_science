@@ -7,19 +7,18 @@ app = Flask(__name__)
 api = Api(app)
 
 client = MongoClient("mongodb://db:27017")
-db = client.aNewDB
-
+db = client['TestDB']
 UserNum = db['UserNum']
 
 UserNum.insert({
-    'num_of_user': 0
+    'num_of_users': 0
 })
 
 class Visit(Resource):
     def get(self):
         
         print(f'Visit Resource')
-        prev_num = UserNum.find({})[0]['num_users']
+        prev_num = UserNum.find({})[0]['num_of_users']
         new_num = prev_num + 1
         UserNum.update({}, {
             "$set": {
