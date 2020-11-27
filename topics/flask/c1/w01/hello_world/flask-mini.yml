@@ -17,6 +17,7 @@ dependencies:
   - ncurses=6.2=h2e338ed_4
   - openssl=1.1.1h=haf1e3a3_0
   - pip=20.2.4=py_0
+  - pymongo=3.11.0=py39h13a702c_4
   - python=3.9.0=ha017127_4_cpython
   - python-dateutil=2.8.1=py_0
   - python_abi=3.9=1_cp39

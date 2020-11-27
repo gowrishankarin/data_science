@@ -17,3 +17,4 @@ dependencies:
   - tzdata=2020d=h516909a_0
   - werkzeug=1.0.1=pyh9f0ad1d_0
   - wheel=0.35.1=pyh9f0ad1d_0
+  - pymongo
