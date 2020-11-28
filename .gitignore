@@ -499,8 +499,8 @@ __pycache__/
 *.xsd.cs
 
 # OpenCover UI analysis results
-OpenCover/
-junit/
+#OpenCover/
+# junit/
 **events.out.*
 **/*.npy
 **/*.pos
