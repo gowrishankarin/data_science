@@ -1,0 +1,45 @@
+name: flask-mini
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - aniso8601=8.0.0=py_0
+  - ca-certificates=2020.11.8=h033912b_0
+  - certifi=2020.11.8=py39h6e9494a_0
+  - cffi=1.14.4=py39h8b0fd8b_0
+  - click=7.1.2=pyh9f0ad1d_0
+  - cryptography=3.2.1=py39hed2902a_0
+  - dnspython=2.0.0=py_0
+  - email-validator=1.1.2=pyhd8ed1ab_0
+  - flask=1.1.2=pyh9f0ad1d_0
+  - flask-restful=0.3.8=py_0
+  - flask-sqlalchemy=2.4.4=pyh9f0ad1d_0
+  - flask-wtf=0.14.3=py_0
+  - idna=2.10=pyh9f0ad1d_0
+  - itsdangerous=1.1.0=py_0
+  - jinja2=2.11.2=pyh9f0ad1d_0
+  - libcxx=11.0.0=h4c3b8ed_1
+  - libffi=3.2.1=hb1e8313_1007
+  - markupsafe=1.1.1=py39h66d5b7b_2
+  - ncurses=6.2=h2e338ed_4
+  - openssl=1.1.1h=haf1e3a3_0
+  - pip=20.2.4=py_0
+  - pycparser=2.20=pyh9f0ad1d_2
+  - pymongo=3.11.0=py39h13a702c_4
+  - python=3.9.0=ha017127_4_cpython
+  - python-dateutil=2.8.1=py_0
+  - python_abi=3.9=1_cp39
+  - pytz=2020.4=pyhd8ed1ab_0
+  - readline=8.0=h0678c8f_2
+  - setuptools=49.6.0=py39h2c36a5b_2
+  - six=1.15.0=pyh9f0ad1d_0
+  - sqlalchemy=1.3.20=py39hb5aae12_0
+  - sqlite=3.33.0=h960bd1c_1
+  - tk=8.6.10=hb0a8c7a_1
+  - tzdata=2020d=h516909a_0
+  - werkzeug=1.0.1=pyh9f0ad1d_0
+  - wheel=0.35.1=pyh9f0ad1d_0
+  - wtforms=2.3.2=pyh9f0ad1d_0
+  - xz=5.2.5=haf1e3a3_1
+  - zlib=1.2.11=h7795811_1010
+prefix: /Users/shankar/dev/tools/anaconda3/envs/flask-mini

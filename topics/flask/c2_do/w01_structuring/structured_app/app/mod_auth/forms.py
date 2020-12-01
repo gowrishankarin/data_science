@@ -1,5 +1,5 @@
 # Import Form and RecatchaField 
-from flask_wtf import Form, RecaptchaField
+from flask_wtf import FlaskForm, RecaptchaField
 
 from wtforms import TextField, PasswordField
 
@@ -8,7 +8,7 @@ from wtforms.validators import Required, Email, EqualTo
 
 # Define the login form (WTForms)
 
-class LoginForm(Form):
+class LoginForm(FlaskForm):
     email    = TextField('Email Address', [Email(),
                 Required(message='Forgot your email address?')])
     password = PasswordField('Password', [
