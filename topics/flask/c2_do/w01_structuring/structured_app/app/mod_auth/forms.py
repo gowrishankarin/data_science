@@ -1,5 +1,7 @@
 # Import Form and RecatchaField 
-from flask.ext.wtf import Form, RecaptchaField
+from flask_wtf import Form, RecaptchaField
+
+from wtforms import TextField, PasswordField
 
 # Import form elements such as TextField and BooleanField 
 from wtforms.validators import Required, Email, EqualTo
