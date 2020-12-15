@@ -32,3 +32,11 @@ def get_index_2018_market_value_splits(market_name='spx', white_noise=True):
         df['wn'] = wn
         
     return df, df_test
+
+def get_random_walk_data():
+    rw = pd.read_csv(os.path.join(DATA_DIR, "RandWalk.csv"))
+    rw.date = pd.to_datetime(rw.date, dayfirst=True)
+    rw.set_index("date", inplace=True)
+    rw = rw.asfreq('b')
+    
+    return rw
