@@ -40,3 +40,24 @@ def get_random_walk_data():
     rw = rw.asfreq('b')
     
     return rw
+
+
+from scipy.stats.distributions import chi2
+def LLR_test(mod_1, mod_2, DF=1):
+    L1 = mod_1.fit().llf
+    L2 = mod_2.fit().llf
+    
+    LR = (2*(L2-L1))
+    p = chi2.sf(LR, DF).round(3)
+    
+    return p
+
+from statsmodels.tsa.arima_model import ARMA
+def ARMA_LLR_test(data, model_ar_x_1, x):
+    model_ar_x = ARMA(data, order=(x, 0))
+    results_ar_x = model_ar_x.fit()
+    llr = None
+    if(model_ar_x_1 != None):
+        llr = LLR_test(model_ar_x_1, model_ar_x)
+        
+    return (model_ar_x, llr)
