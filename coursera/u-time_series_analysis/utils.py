@@ -53,8 +53,8 @@ def LLR_test(mod_1, mod_2, DF=1):
     return p
 
 from statsmodels.tsa.arima_model import ARMA
-def ARMA_LLR_test(data, model_ar_x_1, x):
-    model_ar_x = ARMA(data, order=(x, 0))
+def ARMA_LLR_test(data, model_ar_x_1, order):
+    model_ar_x = ARMA(data, order=order)
     results_ar_x = model_ar_x.fit()
     llr = None
     if(model_ar_x_1 != None):
