@@ -59,5 +59,5 @@ def ARMA_LLR_test(data, model_ar_x_1, order):
     llr = None
     if(model_ar_x_1 != None):
         llr = LLR_test(model_ar_x_1, model_ar_x)
-        
+    print(f'ARMA{order}: \tLL = {results_ar_x.llf}, \tAIC = {results_ar_x.aic}')    
     return (model_ar_x, llr)
