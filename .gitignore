@@ -513,3 +513,4 @@ __pycache__/
 **/*.pt
 **/*-ubyte
 **/*.subwords
+**/*.pkz
